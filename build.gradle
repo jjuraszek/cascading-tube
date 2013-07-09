@@ -4,7 +4,7 @@ apply plugin: 'idea'
 
 
 group = 'org.clojars.jj'
-version = '0.15'
+version = '1.0'
 
 configurations {
   deployerJars
@@ -31,17 +31,6 @@ dependencies {
   deployerJars 'org.apache.ant:ant-jsch:1.7.1', 'jsch:jsch:0.1.29'
 }
 
-task deploy(dependsOn: ['install', 'sourcesJar', 'javadocJar']) << {
-  ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
-      classpath: configurations.deployerJars.asPath)
-  ant.scp(todir: 'repo@conjars.org:', keyfile: '${user.home}/.ssh/id_dsa', verbose: 'true', passphrase: '') {
-    fileset(dir: 'build') {
-      include(name: 'libs/*.jar')
-      include(name: 'poms/*.xml')
-    }
-  }
-}
-
 tasks.withType(ScalaCompile) {
   scalaCompileOptions.useAnt = false
   scalaCompileOptions.additionalParameters = ['-target:jvm-1.6','-feature','-language:implicitConversions']
@@ -64,5 +53,22 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 idea {
   module {
     downloadSources = true
+  }
+}
+
+task deploy(dependsOn: ['clean', 'install', 'uploadArchives'])
+
+artifacts{
+  archives sourcesJar
+  archives javadocJar
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      repository(url: "http://conjars.org/repo"){
+        authentication(userName: conjarUsr,password: conjarPswd)
+      }
+    }
   }
 }
