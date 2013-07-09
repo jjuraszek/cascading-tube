@@ -8,5 +8,9 @@ repositories {
 }
 
 dependencies {
-  compile(['org.scala-lang:scala-library:2.10.1'], ['cascading:cascading-core:2.1.6'])
+  compile(
+      'org.scala-lang:scala-library:2.10.1',
+      'cascading:cascading-core:2.1.6',
+      'cascading:cascading-hadoop:2.1.6'
+  )
 }
