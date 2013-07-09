@@ -15,3 +15,5 @@ project/plugins/project/
 # jetbrains
 .idea
 *.iml
+.gradle
+build/

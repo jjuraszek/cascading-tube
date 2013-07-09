@@ -1,4 +1,13 @@
 apply plugin: 'scala'
+apply plugin: 'maven'
+
+
+group = 'org.clojars.jj'
+version = '0.1'
+
+configurations {
+  deployerJars
+}
 
 repositories {
   mavenCentral()
@@ -13,4 +22,17 @@ dependencies {
       'cascading:cascading-core:2.1.6',
       'cascading:cascading-hadoop:2.1.6'
   )
+  deployerJars 'org.apache.ant:ant-jsch:1.7.1', 'jsch:jsch:0.1.29'
+}
+
+task deploy(dependsOn: 'install') << {
+  ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
+      classpath: configurations.deployerJars.asPath)
+  ant.scp(todir: 'repo@conjars.org:', keyfile: '${user.home}/.ssh/id_dsa', verbose: 'true', passphrase: '') {
+    fileset(dir: 'build') {
+      include(name: 'libs/*.jar')
+      include(name: 'poms/*.xml')
+    }
+  }
+  ant.echo('dffddf')
 }
