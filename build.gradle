@@ -5,7 +5,7 @@ apply plugin: 'idea'
 
 
 group = 'org.tube'
-version = '1.06'
+version = '1.09'
 
 compileJava{
   sourceCompatibility = '1.6'

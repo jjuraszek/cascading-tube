@@ -17,6 +17,7 @@ public class SqlSinkTap extends SinkTap {
   private String user;
   private String pass;
   private String insertQuery;
+  private String id;
 
   private SqlSinkTap() {
     setScheme(new WriteSqlScheme());
@@ -28,7 +29,7 @@ public class SqlSinkTap extends SinkTap {
 
   @Override
   public String getIdentifier() {
-    return insertQuery;
+    return id;
   }
 
   @Override
@@ -114,6 +115,7 @@ public class SqlSinkTap extends SinkTap {
 
     public SqlSinkTapBuilder sql(String sql) {
       tap.insertQuery = sql;
+      tap.id = sql.replaceAll("\\s+", " ");
       return this;
     }
   }
