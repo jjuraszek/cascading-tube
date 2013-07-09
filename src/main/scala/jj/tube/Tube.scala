@@ -189,8 +189,10 @@ trait RowOperator {
    * @param function transforming closure
    * @return row scheme. values from input replaced
    */
-  def replace(input: Fields = ALL, funcScheme: Fields = ARGS)
-             (function: (Map[String, String] => Map[String, Any])) = each(input, funcScheme, REPLACE)(function)
+  def replace(input: Fields, funcScheme: Fields = ARGS)
+             (function: (Map[String, String] => Map[String, Any])) =
+    if(funcScheme == ARGS) each(input, funcScheme, REPLACE)(function)
+    else each(input, funcScheme)(function).discard(input)
 
   /**
    * Filtering this tube according to defined closure
