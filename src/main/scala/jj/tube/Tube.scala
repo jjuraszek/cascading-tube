@@ -95,16 +95,6 @@ trait GroupOperator {
   this: Tube =>
 
   /**
-   * Make group aggreagtion based on {@code key} and performing accumulation defined in {@code aggregators} for each group.
-   *
-   * @param key groupping fields
-   * @param aggregators accumulators
-   * @return transformed tube with scheme containing group and effect of accumulation
-   */
-  //TODO transform to builder pattern
-  def aggregateBy(key: Fields, aggregators: AggregateBy*) = this << new AggregateBy(this, key, aggregators: _*)
-
-  /**
    * Make group of this tube
    *
    * @param key groupping keys
@@ -118,10 +108,10 @@ trait GroupOperator {
    */
   def groupBy(key: Fields, sort: Fields = null, reverse: Boolean = false)
              (input: Fields = ALL, bufferScheme: Fields = UNKNOWN, outScheme: Fields = RESULTS)
-             (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) = {
+             (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) ={
     this << new GroupBy(this, key, sort, reverse)
     this << new Every(this, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
-  }
+}
 
   /**
    * Take top n rows from each group
@@ -132,10 +122,9 @@ trait GroupOperator {
    * @param limit how many rows to keep from each group
    * @return rows fields are not altered. Only row count is different
    */
-  def top(group: Fields, sort: Fields, reverse: Boolean = false, limit: Int = 1) = {
-    groupBy(group, sort, reverse)
-    this << new Every(this, VALUES, new First(limit))
-  }
+  def top(group: Fields, sort: Fields, reverse: Boolean = false, limit: Int = 1) ={
+    this << new GroupBy(this, group, sort, reverse)
+  this<< new Every(this, VALUES, new First(limit))}
 
   /**
    * Join this tube with other big tube.
@@ -165,6 +154,16 @@ trait GroupOperator {
 //TODO method replace
 trait RowOperator {
   this: Tube =>
+
+  /**
+   * Make group aggreagtion based on {@code key} and performing accumulation defined in {@code aggregators} for each group.
+   *
+   * @param key groupping fields
+   * @param aggregators accumulators
+   * @return transformed tube with scheme containing group and effect of accumulation
+   */
+  //TODO transform to builder pattern
+  def aggregateBy(key: Fields, aggregators: AggregateBy*) = this << new AggregateBy(this, key, aggregators: _*)
 
   /**
    * Transformation allowing to run closure against each row
@@ -278,20 +277,18 @@ trait MathOperator {
   /**
    * Math operation with left and right operand. {@code leftOp} and {@code rightOp} must be convertable to Double.
    */
-  def math(leftOp: String, rightOp: String, outField: String)(func: (Double, Double) => Double) = {
-    this << each((leftOp, rightOp), outField) {
+  def math(leftOp: String, rightOp: String, outField: String)(func: (Double, Double) => Double) =
+    each((leftOp, rightOp), outField) {
       row =>
         Map(outField -> func(row(leftOp).toDouble, row(rightOp).toDouble))
     }
-  }
 
   /**
    * Math operation with single operand. {@code operand} must be convertable to Double.
    */
-  def math(operand: String, outField: String)(func: Double => Double) = {
-    this << each(operand, outField) {
+  def math(operand: String, outField: String)(func: Double => Double) =
+    each(operand, outField) {
       row =>
         Map(outField -> func(row(operand).toDouble))
     }
-  }
 }
