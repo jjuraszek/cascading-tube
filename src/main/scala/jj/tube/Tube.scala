@@ -107,8 +107,8 @@ trait GroupOperator {
    * @param key groupping keys
    * @param sort sort field of each group (buffer will gets fields in defined order)
    * @param reverse whether to sort in revers order
-   * @param input closure input
    * @param bufferScheme closure output fields scheme
+   * @param input closure input
    * @param outScheme fields retain after transformation
    * @param buffer closure operating on group fields and rows from each group
    * @return schema from outScheme
@@ -123,12 +123,12 @@ trait GroupOperator {
    *
    * @param group fields defining group
    * @param sort sorting fields in each group
-   * @param reverse whether to sort group in reverse order
+   * @param descending whether to sort group in descending order
    * @param limit how many rows to keep from each group
    * @return rows fields are not altered. Only row count is different
    */
-  def top(group: Fields, sort: Fields, reverse: Boolean = false, limit: Int = 1) =
-    this << new GroupBy(this, group, sort, reverse) << new Every(this, VALUES, new First(limit))
+  def top(group: Fields, sort: Fields, descending: Boolean = false, limit: Int = 1) =
+    this << new GroupBy(this, group, sort, descending) << new Every(this, VALUES, new First(limit))
 
   /**
    * Join this tube with other big tube.
@@ -139,8 +139,26 @@ trait GroupOperator {
    * @param joiner type of join (inner/outer etc. { @see cascading.pipe.joiner.Joiner})
    * @return key group X this tube scheme X other tube scheme
    */
-  def coGroup(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
+  def join(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
     this << new CoGroup(this, leftKey, rightCollection, rightKey, joiner)
+
+  /**
+   * Join this tube with other big tube. Group the results accordingly to join key and apply operation on each join group
+   *
+   * @param leftKey this tube join key
+   * @param rightCollection other tube
+   * @param rightKey other tube join key
+   * @param joiner type of join (inner/outer etc. { @see cascading.pipe.joiner.Joiner})
+   * @param bufferScheme closure output fields scheme
+   * @param input closure input
+   * @param outScheme fields retain after transformation
+   * @param buffer closure operating on group fields and rows from each group
+   * @return schema from outScheme
+   */
+  def coGroup(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin)
+             (bufferScheme: Fields = UNKNOWN, input: Fields = ALL, outScheme: Fields = RESULTS)
+             (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) =
+    this << new CoGroup(this, leftKey, rightCollection, rightKey, joiner) << new Every(this, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
 
   /**
    * Join this tube with other tube fit to be in memory.
@@ -201,7 +219,7 @@ trait RowOperator {
    * @param filter closure predicate. If true rule out the row
    * @return fields are not altered. Only row count is different
    */
-  def filter(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(this, input, asFilter(filter))
+  def filterOut(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(this, input, asFilter(filter))
 
   /**
    * Delete duplicates from this tube
@@ -212,7 +230,6 @@ trait RowOperator {
   def unique(fields: Fields = ALL) = this << new Unique(this, fields)
 }
 
-//TODO append
 trait FieldsOperator {
   this: Tube =>
 
