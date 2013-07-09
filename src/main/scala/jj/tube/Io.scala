@@ -17,5 +17,7 @@ object Io {
   }
 
   implicit def toTap(io: Io): Tap[Any, Any, Any] = io.tap
+
+  implicit def toIo(tap: Tap[Any, Any, Any]) = new Io(tap)
 }
 
