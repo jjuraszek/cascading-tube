@@ -9,6 +9,7 @@ import cascading.pipe.assembly._
 import cascading.operation.aggregator.First
 import CustomOps._
 import Tube._
+import scala.language.reflectiveCalls
 
 class Tube(var pipe: Pipe) extends Grouping with GroupOperator with RowOperator with FieldsTransform with MathOperation {
   def checkpoint = this << new Checkpoint(pipe)

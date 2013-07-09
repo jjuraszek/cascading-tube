@@ -7,6 +7,8 @@ import scala.collection.convert.WrapAsScala.asScalaIterator
 import cascading.pipe.assembly.{AverageBy, FirstBy, CountBy, SumBy}
 
 object CustomOps extends Aggregators {
+  import scala.language.existentials
+
   def asFilter(isRemovable: (Map[String, String] => Boolean)): Filter[Any] =
     new BaseOperation[Any] with Filter[Any] {
       override def isRemove(flowProcess: FlowProcess[_], call: FilterCall[Any]): Boolean = {

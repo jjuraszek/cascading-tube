@@ -15,7 +15,7 @@ repositories {
   maven {
     url 'http://conjars.org/repo'
   }
-  maven{
+  maven {
     url 'https://repository.cloudera.com/artifactory/cloudera-repos'
   }
 }
@@ -23,16 +23,15 @@ repositories {
 dependencies {
   compile(
       'org.scala-lang:scala-library:2.10.2',
-      'org.scala-lang:scala-reflect:2.10.2',
       'cascading:cascading-core:2.1.6',
       'cascading:cascading-local:2.1.6',
       'cascading:cascading-hadoop:2.1.6',
-      'org.apache.hadoop:hadoop-client:2.0.0-cdh4.2.1'
+      'org.apache.hadoop:hadoop-client:2.0.0-cdh4.2.1',
   )
   deployerJars 'org.apache.ant:ant-jsch:1.7.1', 'jsch:jsch:0.1.29'
 }
 
-task deploy(dependsOn: ['install','sourcesJar','javadocJar']) << {
+task deploy(dependsOn: ['install', 'sourcesJar', 'javadocJar']) << {
   ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
       classpath: configurations.deployerJars.asPath)
   ant.scp(todir: 'repo@conjars.org:', keyfile: '${user.home}/.ssh/id_dsa', verbose: 'true', passphrase: '') {
@@ -44,7 +43,12 @@ task deploy(dependsOn: ['install','sourcesJar','javadocJar']) << {
 }
 
 tasks.withType(ScalaCompile) {
-  scalaCompileOptions.additionalParameters = ['-target:jvm-1.6']
+  scalaCompileOptions.useAnt = false
+  scalaCompileOptions.additionalParameters = ['-target:jvm-1.6','-feature','-language:implicitConversions']
+  configure(scalaCompileOptions.forkOptions) {
+    memoryMaximumSize = '1g'
+    jvmArgs = ['-XX:MaxPermSize=256m']
+  }
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
