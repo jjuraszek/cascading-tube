@@ -4,14 +4,39 @@ import cascading.pipe._
 import cascading.pipe.joiner.{Joiner, InnerJoin}
 import cascading.tuple.Fields
 import cascading.tuple.Fields._
-import cascading.operation.Insert
+import cascading.operation.{DebugLevel, Insert, Debug}
 import cascading.pipe.assembly._
 import cascading.operation.aggregator.First
 import CustomOps._
 import Tube._
 import scala.language.reflectiveCalls
 
-//TODO debug op
+/**
+ * Companion object creating tube and containing implicit conversions allowing usage of tube requiring pipe and pipe to tube.
+ */
+object Tube {
+  /**
+   * Creating brand new tube with brand new pipe.
+   *
+   * @param name pipe name
+   * @return tube instance
+   */
+  def apply(name: String) = new Tube(new Pipe(name))
+
+  /**
+   * Creating tube based on previous pipe
+   *
+   * @param name new pipe name
+   * @param previous previouse pipe
+   * @return tube instance
+   */
+  def apply(name: String, previous: Pipe) = new Tube(new Pipe(name, previous))
+
+  implicit def toPipe(tube: Tube) = tube.pipe
+
+  implicit def toTube(pipe: Pipe) = new Tube(pipe)
+}
+
 class Tube(private var pipe: Pipe) extends GroupOperator with RowOperator with FieldsOperator with MathOperator {
   /**
    * map of flow intersections allowing to dump intermediate data.
@@ -29,6 +54,13 @@ class Tube(private var pipe: Pipe) extends GroupOperator with RowOperator with F
     if (name.isDefined) checkpoints(name.get) = chkPoint
     chkPoint
   }
+
+  /**
+   * order debug output on stream
+   * @param level by this param you can turn off debug message on FlowDef
+   * @return unaltered tube
+   */
+  def debug(level: DebugLevel = DebugLevel.VERBOSE) = this << new Each(this, level, new Debug)
 
   /**
    * Merge this tube with other tubes
@@ -64,32 +96,6 @@ class Tube(private var pipe: Pipe) extends GroupOperator with RowOperator with F
     pipe = op
     this
   }
-}
-
-/**
- * Companion object creating tube and containing implicit conversions allowing usage of tube requiring pipe and pipe to tube.
- */
-object Tube {
-  /**
-   * Creating brand new tube with brand new pipe.
-   *
-   * @param name pipe name
-   * @return tube instance
-   */
-  def apply(name: String) = new Tube(new Pipe(name))
-
-  /**
-   * Creating tube based on previous pipe
-   *
-   * @param name new pipe name
-   * @param previous previouse pipe
-   * @return tube instance
-   */
-  def apply(name: String, previous: Pipe) = new Tube(new Pipe(name, previous))
-
-  implicit def toPipe(tube: Tube) = tube.pipe
-
-  implicit def toTube(pipe: Pipe) = new Tube(pipe)
 }
 
 trait GroupOperator {
