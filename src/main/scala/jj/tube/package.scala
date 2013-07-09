@@ -1,10 +1,71 @@
 package jj
 
 import cascading.tuple.{TupleEntry, Fields, Tuple}
-import scala.collection.JavaConversions.seqAsJavaList
+import cascading.tap.{SinkMode, Tap}
+import cascading.tap.hadoop.Hfs
+import cascading.scheme.hadoop.TextDelimited
 
-package object tube {
-  //fields
+/**
+ * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
+ */
+package object tube extends TupleConversions {
+
+  type Io = Tap[Any, Any, Any]
+
+  /**
+   * Input csv tap. Tap should have not headers. Tap will ignore situation where there is not enough columns for provided scheme (null for missing fields).
+   *
+   * @param path hdfs path
+   * @param scheme fields name mapped for columns
+   * @param delimiter
+   * @param escape
+   * @return sink ready for use on hadoop
+   */
+  def flexCsvIn(path: String, scheme: List[String], delimiter: String = ",", escape: String = "\"") = {
+    new Hfs(new TextDelimited(new Fields(scheme: _*), null, false, false, delimiter, false, escape, null, true), path).asInstanceOf[Io]
+  }
+
+  /**
+   * Output csv tap. It will replace hdfs file if exist. Write down every field from tap.
+   *
+   * @param path hdfs path
+   * @param delimiter
+   * @param escape
+   * @return sink ready for use on hadoop
+   */
+  def replacingCsvOut(path: String, delimiter: String = ",", escape: String = "\"") = {
+    new Hfs(new TextDelimited(false, delimiter, escape), path, SinkMode.REPLACE).asInstanceOf[Io]
+  }
+}
+
+trait TupleConversions extends FieldsConversions {
+  def toTupleEntry(schemeWithValues: Map[String, Any]) =
+    schemeWithValues.foldLeft(new TupleEntry(toField(schemeWithValues.keys.toSeq), Tuple.size(schemeWithValues.size))) {
+      (te, entry) =>
+        entry._2 match {
+          case x: Boolean => te.setBoolean(entry._1, x)
+          case x: Int => te.setInteger(entry._1, x)
+          case x: Double => te.setDouble(entry._1, x)
+          case x => te.setString(entry._1, if (x != null) x.toString() else "")
+        }
+        te
+    }
+
+  def toMap(tupleEntry: TupleEntry) = {
+    val fieldWithVal = for {
+      i <- 0 until tupleEntry.getFields.size
+    } yield {
+      tupleEntry.getFields.get(i).toString -> Option(tupleEntry.getObject(i)).getOrElse("").toString
+    }
+    fieldWithVal.toMap
+  }
+
+  def toTuple(row: List[Any]) = new cascading.tuple.Tuple(row.map(_.asInstanceOf[Object]): _*)
+
+  def toList(tuple: Tuple) = (for (i <- 0 to tuple.size) yield tuple.getObject(i).toString).toList
+}
+
+trait FieldsConversions {
   def f(name: String*): Fields = new Fields(name: _*)
 
   implicit def aggregateFields(fields: Seq[Fields]): Fields = fields.reduceLeft[Fields]((f1, f2) => f1.append(f2))

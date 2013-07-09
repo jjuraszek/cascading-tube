@@ -1,21 +1,21 @@
 package jj.tube
 
-import cascading.tuple.{Tuple, Fields, TupleEntry}
+import cascading.tuple.Fields
 import cascading.operation._
 import cascading.flow.FlowProcess
 import scala.collection.convert.WrapAsScala.asScalaIterator
+import cascading.pipe.assembly.{AverageBy, FirstBy, CountBy, SumBy}
 
-object CustomOps {
-  def asFilter(isRemovable: (Map[String, String] => Boolean)): Filter[Any] = {
+object CustomOps extends Aggregators {
+  def asFilter(isRemovable: (Map[String, String] => Boolean)): Filter[Any] =
     new BaseOperation[Any] with Filter[Any] {
       override def isRemove(flowProcess: FlowProcess[_], call: FilterCall[Any]): Boolean = {
         val arg = toMap(call.getArguments)
         isRemovable(arg)
       }
     }
-  }
 
-  def asFunction(transform: (Map[String, String] => Map[String, Any])) = {
+  def asFunction(transform: (Map[String, String] => Map[String, Any])) =
     new BaseOperation[Any] with Function[Any] {
       override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
         val mapOfOutcome = transform(toMap(functionCall.getArguments))
@@ -27,9 +27,8 @@ object CustomOps {
         this
       }
     }
-  }
 
-  def asBuffer(transform: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) = {
+  def asBuffer(transform: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) =
     new BaseOperation[Any] with Buffer[Any] {
       override def operate(flowProcess: FlowProcess[_], bufferCall: BufferCall[Any]) {
         val lazyIterator = bufferCall.getArgumentsIterator.map(toMap)
@@ -44,26 +43,36 @@ object CustomOps {
         this
       }
     }
-  }
+}
 
-  def toTupleEntry(schemeWithValues: Map[String, Any]) =
-    schemeWithValues.foldLeft(new TupleEntry(toField(schemeWithValues.keys.toSeq), Tuple.size(schemeWithValues.size))) {
-      (te, entry) =>
-        entry._2 match {
-          case x: Boolean => te.setBoolean(entry._1, x)
-          case x: Int => te.setInteger(entry._1, x)
-          case x: Double => te.setDouble(entry._1, x)
-          case x => te.setString(entry._1, if (x != null) x.toString() else "")
-        }
-        te
-    }
+trait Aggregators {
+  /**
+   * Sum values from {@code field} resulting in type {@code resultType}. Must be part of Tube.aggregateBy call.
+   */
+  def sum(field: String, resultType: Class[_]): SumBy = new SumBy(field, field, resultType)
 
-  def toMap(tupleEntry: TupleEntry) = {
-    val fieldWithVal = for {
-      i <- 0 until tupleEntry.getFields.size
-    } yield {
-      tupleEntry.getFields.get(i).toString -> Option(tupleEntry.getObject(i)).getOrElse("").toString
-    }
-    fieldWithVal.toMap
-  }
+  /**
+   * Sum values from {@code field} resulting in type {@code Double}. Must be part of Tube.aggregateBy call.
+   */
+  def sum(field: String): SumBy = sum(field, classOf[Double])
+
+  /**
+   * Sum values from {@code field} resulting in type {@code Integer}. Must be part of Tube.aggregateBy call.
+   */
+  def sumInt(field: String) = sum(field, classOf[Integer])
+
+  /**
+   * Count rows resulting in field {@code outField}. Must be part of Tube.aggregateBy call.
+   */
+  def count(outField: String) = new CountBy(outField)
+
+  /**
+   * Rewrite {@code field} from first row. Must be part of Tube.aggregateBy call.
+   */
+  def first(field: String) = new FirstBy(field)
+
+  /**
+   * Compute average value of {@code field}. Must be part of Tube.aggregateBy call.
+   */
+  def avg(field: String) = new AverageBy(field, field)
 }
