@@ -11,12 +11,55 @@ import CustomOps._
 import Tube._
 import scala.language.reflectiveCalls
 
-class Tube(var pipe: Pipe) extends Grouping with GroupOperator with RowOperator with FieldsTransform with MathOperation {
-  def checkpoint = this << new Checkpoint(pipe)
+class Tube(private var pipe: Pipe) extends GroupOperator with RowOperator with FieldsOperator with MathOperator {
+  /**
+   * map of flow intersections allowing to dump intermediate data.
+   */
+  val checkpoints = scala.collection.mutable.Map[String, Checkpoint]()
 
+  /**
+   * make checkpoint with name
+   *
+   * @param name checkpoint name
+   * @return tube instance
+   */
+  def checkpoint(name: Option[String] = None) = this << {
+    val chkPoint = new Checkpoint(name.getOrElse(null), pipe)
+    if (name.isDefined) checkpoints(name.get) = chkPoint
+    chkPoint
+  }
+
+  /**
+   * Merge this tube with other tubes
+   * @param tubes non zero length list of tubes
+   * @return current tube with merged tubes
+   */
   def merge(tubes: Tube*) = this << new Merge(pipe :: tubes.map(_.pipe).toList: _*)
 
-  def <<(op: Pipe) = {
+  /**
+   * Split tube for two tubes. One conforming to the {@code filter} and other one not confirming to it
+   *
+   * @param input fields of closure input
+   * @param filter closure predicate intersecting original tube
+   * @return tuple of two tubes. First conforming to the filter and second one not confirming to it
+   */
+  def split(input: Fields = ALL)(filter: Map[String, String] => Boolean) = {
+    val positiveTube = Tube("positive_" + pipe.getName, this.pipe)
+    positiveTube.filter(input)(filter)
+
+    val negativeTube = Tube("negative_" + pipe.getName, this.pipe)
+    negativeTube.filter(input)(!filter(_))
+    (positiveTube, negativeTube)
+  }
+
+  /**
+   * Allow to decorate current tube. Apply transformation to current tube
+   * @param op transformation closure received current tube pipe and return transformed pipe
+   * @return tube with applied transformation
+   */
+  def <<(op: Pipe => Pipe): Tube = this << op(this.pipe)
+
+  protected[this] def <<(op: Pipe): Tube = {
     pipe = op
     this
   }
@@ -48,7 +91,7 @@ object Tube {
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
 }
 
-trait Grouping {
+trait GroupOperator {
   this: Tube =>
 
   /**
@@ -59,7 +102,7 @@ trait Grouping {
    * @return transformed tube with scheme containing group and effect of accumulation
    */
   //TODO transform to builder pattern
-  def aggregateBy(key: Fields, aggregators: AggregateBy*) = this << new AggregateBy(pipe, key, aggregators: _*)
+  def aggregateBy(key: Fields, aggregators: AggregateBy*) = this << new AggregateBy(this, key, aggregators: _*)
 
   /**
    * Make group of this tube
@@ -67,10 +110,32 @@ trait Grouping {
    * @param key groupping keys
    * @param sort sort field of each group (buffer will gets fields in defined order)
    * @param reverse whether to sort in revers order
-   * @return schema containing: group X set(rows)
+   * @param input closure input
+   * @param bufferScheme closure output fields scheme
+   * @param outScheme fields retain after transformation
+   * @param buffer closure operating on group fields and rows from each group
+   * @return schema from outScheme
    */
-  //TODO incorporate every in that op
-  def groupBy(key: Fields, sort: Fields, reverse: Boolean = false) = this << new GroupBy(pipe, key, sort, reverse)
+  def groupBy(key: Fields, sort: Fields = null, reverse: Boolean = false)
+             (input: Fields = ALL, bufferScheme: Fields = UNKNOWN, outScheme: Fields = RESULTS)
+             (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) = {
+    this << new GroupBy(this, key, sort, reverse)
+    this << new Every(this, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
+  }
+
+  /**
+   * Take top n rows from each group
+   *
+   * @param group fields defining group
+   * @param sort sorting fields in each group
+   * @param reverse whether to sort group in reverse order
+   * @param limit how many rows to keep from each group
+   * @return rows fields are not altered. Only row count is different
+   */
+  def top(group: Fields, sort: Fields, reverse: Boolean = false, limit: Int = 1) = {
+    groupBy(group, sort, reverse)
+    this << new Every(this, VALUES, new First(limit))
+  }
 
   /**
    * Join this tube with other big tube.
@@ -82,7 +147,7 @@ trait Grouping {
    * @return key group X this tube scheme X other tube scheme
    */
   def coGroup(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
-    this << new CoGroup(pipe, leftKey, rightCollection, rightKey, joiner)
+    this << new CoGroup(this, leftKey, rightCollection, rightKey, joiner)
 
   /**
    * Join this tube with other tube fit to be in memory.
@@ -94,7 +159,7 @@ trait Grouping {
    * @return key group X this tube scheme X other tube scheme
    */
   def hashJoin(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
-    this << new HashJoin(pipe, leftKey, rightCollection, rightKey, joiner)
+    this << new HashJoin(this, leftKey, rightCollection, rightKey, joiner)
 }
 
 //TODO method replace
@@ -113,7 +178,7 @@ trait RowOperator {
   //TODO each supporting List => List
   def each(input: Fields = ALL, funcScheme: Fields = UNKNOWN, outScheme: Fields = ALL)
           (function: (Map[String, String] => Map[String, Any])) =
-    this << new Each(pipe, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
+    this << new Each(this, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
 
   /**
    * Filtering this tube according to defined closure
@@ -122,7 +187,7 @@ trait RowOperator {
    * @param filter closure predicate. If true rule out the row
    * @return fields are not altered. Only row count is different
    */
-  def filter(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(pipe, input, asFilter(filter))
+  def filter(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(this, input, asFilter(filter))
 
   /**
    * Delete duplicates from this tube
@@ -130,42 +195,11 @@ trait RowOperator {
    * @param fields fields defining uniqueness
    * @return fields are not altered. Only unique rows
    */
-  def unique(fields: Fields = ALL) = this << new Unique(pipe, fields)
-}
-
-trait GroupOperator {
-  this: Tube =>
-
-  /**
-   * Transform grouped rows. Operate with closure on each group
-   *
-   * @param input closure input
-   * @param bufferScheme closure output fields
-   * @param outScheme fields retain after transformation
-   * @param buffer closure operating on group fields and rows from each group
-   * @return fields from outScheme
-   */
-  def every(input: Fields = ALL, bufferScheme: Fields = UNKNOWN, outScheme: Fields = RESULTS)
-           (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) =
-    this << new Every(pipe, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
-
-  /**
-   * Take top n rows from each group
-   *
-   * @param group fields defining group
-   * @param sort sorting fields in each group
-   * @param reverse whether to sort group in reverse order
-   * @param limit how many rows to keep from each group
-   * @return rows fields are not altered. Only row count is different
-   */
-  def top(group: Fields, sort: Fields, reverse: Boolean = false, limit: Int = 1) = {
-    groupBy(group, sort, reverse)
-    this << new Every(pipe, VALUES, new First(limit))
-  }
+  def unique(fields: Fields = ALL) = this << new Unique(this, fields)
 }
 
 //TODO append
-trait FieldsTransform {
+trait FieldsOperator {
   this: Tube =>
 
   /**
@@ -174,7 +208,7 @@ trait FieldsTransform {
    * @param field fields to remove from tube
    * @return original fields - removed fields
    */
-  def discard(field: Fields) = this << new Discard(pipe, field)
+  def discard(field: Fields) = this << new Discard(this, field)
 
   /**
    * Rename some fields
@@ -182,7 +216,7 @@ trait FieldsTransform {
    * @param to new names (quantity of fields name must be equal to 'from')
    * @return original fields - from + to
    */
-  def rename(from: Fields, to: Fields) = this << new Rename(pipe, from, to)
+  def rename(from: Fields, to: Fields) = this << new Rename(this, from, to)
 
   /**
    * Keep fields listed in {@code fields}
@@ -190,7 +224,7 @@ trait FieldsTransform {
    * @param fields
    * @return fields from param 'fields'
    */
-  def retain(fields: Fields) = this << new Retain(pipe, fields)
+  def retain(fields: Fields) = this << new Retain(this, fields)
 
   /**
    * Alter type of fields.
@@ -198,7 +232,7 @@ trait FieldsTransform {
    * @param klass type of destination class
    * @return same as input fields. Only values may be altered (ie. Double -> Integer)
    */
-  def coerce(fields: Fields, klass: Class[_]) = this << new Coerce(pipe, fields, (1 to fields.size).map(_ => klass): _*)
+  def coerce(fields: Fields, klass: Class[_]) = this << new Coerce(this, fields, (1 to fields.size).map(_ => klass): _*)
 
   /**
    * Append some constances to tube
@@ -207,10 +241,10 @@ trait FieldsTransform {
    * @param value values for each new field
    * @return input fields + 'fields' from param
    */
-  def insert(field: Fields, value: String*) = this << new Each(pipe, new Insert(field, value: _*), ALL)
+  def insert(field: Fields, value: String*) = this << new Each(this, new Insert(field, value: _*), ALL)
 }
 
-trait MathOperation {
+trait MathOperator {
   this: Tube =>
 
   /**
