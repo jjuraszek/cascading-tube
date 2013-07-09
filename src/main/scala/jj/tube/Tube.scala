@@ -73,43 +73,39 @@ trait FieldsTransform {
 
   def retain(fields: Fields) = this << new Retain(pipe, fields)
 
+  def coerce(fields: Fields, klass: Class[_]) = this << new Coerce(pipe, fields, (1 to fields.size).map( _ => klass): _*)
+
   def insert(field: Fields, value: String*) = this << new Each(pipe, new Insert(field, value: _*), ALL)
 }
 
 trait MathOperation {
   this: Tube =>
-  def divide(leftOp: String, rightOp: String, outField: String, klass: Class[_] = Double.getClass) = op(leftOp, rightOp, outField, klass) {
+  def divide(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
     (a: Double, b: Double) =>
       (a / b)
   }
 
-  def multiply(leftOp: String, rightOp: String, outField: String, klass: Class[_] = Double.getClass) = op(leftOp, rightOp, outField, klass) {
+  def multiply(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
     (a: Double, b: Double) =>
       (a * b)
   }
 
-  def plus(leftOp: String, rightOp: String, outField: String, klass: Class[_] = Double.getClass) = op(leftOp, rightOp, outField, klass) {
+  def plus(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
     (a: Double, b: Double) =>
       (a + b)
   }
 
-  def minus(leftOp: String, rightOp: String, outField: String, klass: Class[_] = Double.getClass) = op(leftOp, rightOp, outField, klass) {
+  def minus(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
     (a: Double, b: Double) =>
       (a - b)
   }
 
-  def op(leftOp: String, rightOp: String, outField: String, klass: Class[_])(func: (Double, Double) => Double) = {
+  def op(leftOp: String, rightOp: String, outField: String)(func: (Double, Double) => Double) = {
     this << each((leftOp, rightOp), outField) {
       row: TupleEntry =>
         val tuple = tupleEntry(outField)
         val result = func(row.getDouble(leftOp), row.getDouble(rightOp))
-        val I = Int.getClass
-        val L = Long.getClass
-        klass match {
-          case I => tuple.setInteger(outField, result.toInt)
-          case L => tuple.setLong(outField, result.toLong)
-          case _ => tuple.setDouble(outField, result)
-        }
+        tuple.setDouble(outField, result)
         tuple
     }
   }
