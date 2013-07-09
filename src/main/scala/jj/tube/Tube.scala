@@ -73,38 +73,45 @@ trait FieldsTransform {
 
   def retain(fields: Fields) = this << new Retain(pipe, fields)
 
-  def coerce(fields: Fields, klass: Class[_]) = this << new Coerce(pipe, fields, (1 to fields.size).map( _ => klass): _*)
+  def coerce(fields: Fields, klass: Class[_]) = this << new Coerce(pipe, fields, (1 to fields.size).map(_ => klass): _*)
 
   def insert(field: Fields, value: String*) = this << new Each(pipe, new Insert(field, value: _*), ALL)
 }
 
 trait MathOperation {
   this: Tube =>
-  def divide(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
-    (a: Double, b: Double) =>
-      (a / b)
+
+  def divide(leftOp: String, rightOp: String, outField: String) = math(leftOp, rightOp, outField) {
+    (a, b) => a / b
   }
 
-  def multiply(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
-    (a: Double, b: Double) =>
-      (a * b)
+  def multiply(leftOp: String, rightOp: String, outField: String) = math(leftOp, rightOp, outField) {
+    (a, b) => a * b
   }
 
-  def plus(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
-    (a: Double, b: Double) =>
-      (a + b)
+  def plus(leftOp: String, rightOp: String, outField: String) = math(leftOp, rightOp, outField) {
+    (a, b) => a + b
   }
 
-  def minus(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
-    (a: Double, b: Double) =>
-      (a - b)
+  def minus(leftOp: String, rightOp: String, outField: String) = math(leftOp, rightOp, outField) {
+    (a, b) => a - b
   }
 
-  def op(leftOp: String, rightOp: String, outField: String)(func: (Double, Double) => Double) = {
+  def math(leftOp: String, rightOp: String, outField: String)(func: (Double, Double) => Double) = {
     this << each((leftOp, rightOp), outField) {
       row: TupleEntry =>
         val tuple = tupleEntry(outField)
         val result = func(row.getDouble(leftOp), row.getDouble(rightOp))
+        tuple.setDouble(outField, result)
+        tuple
+    }
+  }
+
+  def math(operand: String, outField: String)(func: (Double) => Double) = {
+    this << each(operand, outField) {
+      row: TupleEntry =>
+        val tuple = tupleEntry(outField)
+        val result = func(row.getDouble(operand))
         tuple.setDouble(outField, result)
         tuple
     }
