@@ -14,11 +14,43 @@ Writing MR hadoop jobs in tube is going to be more functional but in the other h
 
 ## Sample use case ##
 
+import jj.tube._
+import jj.tube.CustomOps._
+import jj.tube.Tube._
+
+```
+val popularFilms = Tube("allFilms")
+  .filter("country"){ 
+    //filter out box office results from usa
+    _ == "usa"
+  }
+  .aggregateBy("title",sumInt("views"), sum("income"))
+```
+
+Now you can use that tube as you use cascading Pipe. Most basic operators you can find in javadoc. Look for content of ```jj.tube._``` package.
+
 ## Design insight ##
-
-
+* ```package object tube``` provide functions of implicit conversions over ```cascading.tuple.{TupleEntry, Fields, Tuple}```
+* ```jj.tube.Tube``` contains main wrapping object allowing chaining of pipe transformation. Look there for detailed list of available transformations. Most of them are aliases to native cascading ops.
+* ```jj.tube.CustomOps``` is helper object providing easy way to: 
+  + construct Aggregators (for ```Tube.aggregateBy``` transformation)
+  + transform closures to Buffers, Filters and Functions
 
 ## Repository, maven and supported versions ##
+Maven repo: 
+```
+<repository>
+  <id>conjars.org</id>
+  <url>http://conjars.org/repo</url>
+</repository>
+```
+
+Supported versions of scala, hadoop and cascading:
+* org.scala-lang:scala-library:2.10.2
+* cascading:cascading-core:2.1.6
+* org.apache.hadoop:hadoop-client:2.0.0-cdh4.2.1
+
+You can compile your own dependencies setup. Replacing only hadoop-client lib should be notimer because tube is not using it directly (scala compiler need it).
 
 ## License MIT ##
 Copyright (C) 2013 Jacek Juraszek
