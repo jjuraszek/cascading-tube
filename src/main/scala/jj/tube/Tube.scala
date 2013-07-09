@@ -219,7 +219,7 @@ trait RowOperator {
    * @param filter closure predicate. If true rule out the row
    * @return fields are not altered. Only row count is different
    */
-  def filterOut(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(this, input, asFilter(filter))
+  def filter(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(this, input, asFilter(filter))
 
   /**
    * Delete duplicates from this tube
@@ -234,7 +234,7 @@ trait FieldsOperator {
   this: Tube =>
 
   /**
-   * Discarde fields
+   * Discard fields
    *
    * @param field fields to remove from tube
    * @return original fields - removed fields

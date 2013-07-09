@@ -5,7 +5,12 @@ apply plugin: 'idea'
 
 
 group = 'org.tube'
-version = '1.05'
+version = '1.06'
+
+compileJava{
+  sourceCompatibility = '1.6'
+  targetCompatibility = '1.6'
+}
 
 repositories {
   mavenLocal()
