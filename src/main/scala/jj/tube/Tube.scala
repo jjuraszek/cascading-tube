@@ -2,7 +2,7 @@ package jj.tube
 
 import cascading.pipe._
 import cascading.pipe.joiner.{Joiner, InnerJoin}
-import cascading.tuple.{TupleEntry, Fields, Tuple}
+import cascading.tuple.{TupleEntry, Fields}
 import cascading.tuple.Fields._
 import cascading.operation.Insert
 import cascading.pipe.assembly._
@@ -78,31 +78,37 @@ trait FieldsTransform {
 
 trait MathOperation {
   this: Tube =>
-  def divide(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
-    _ / _
+  def divide(leftOp: String, rightOp: String, outField: String, klass: Class[_] = Double.getClass) = op(leftOp, rightOp, outField, klass) {
+    (a: Double, b: Double) =>
+      (a / b)
   }
 
-  def multiply(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
-    _ * _
+  def multiply(leftOp: String, rightOp: String, outField: String, klass: Class[_] = Double.getClass) = op(leftOp, rightOp, outField, klass) {
+    (a: Double, b: Double) =>
+      (a * b)
   }
 
-  def plus(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
-    _ + _
+  def plus(leftOp: String, rightOp: String, outField: String, klass: Class[_] = Double.getClass) = op(leftOp, rightOp, outField, klass) {
+    (a: Double, b: Double) =>
+      (a + b)
   }
 
-  def minus(leftOp: String, rightOp: String, outField: String) = op(leftOp, rightOp, outField) {
-    _ - _
+  def minus(leftOp: String, rightOp: String, outField: String, klass: Class[_] = Double.getClass) = op(leftOp, rightOp, outField, klass) {
+    (a: Double, b: Double) =>
+      (a - b)
   }
 
-  def op[T](leftOp: String, rightOp: String, outField: String)(func: (Double, Double) => T) = {
+  def op(leftOp: String, rightOp: String, outField: String, klass: Class[_])(func: (Double, Double) => Double) = {
     this << each((leftOp, rightOp), outField) {
       row: TupleEntry =>
-        val tuple = new TupleEntry(outField)
+        val tuple = tupleEntry(outField)
         val result = func(row.getDouble(leftOp), row.getDouble(rightOp))
-        result match {
-          case d: Double => tuple.setDouble(outField, d)
-          case i: Int => tuple.setInteger(outField, i)
-          case l: Long => tuple.setLong(outField, l)
+        val I = Int.getClass
+        val L = Long.getClass
+        klass match {
+          case I => tuple.setInteger(outField, result.toInt)
+          case L => tuple.setLong(outField, result.toLong)
+          case _ => tuple.setDouble(outField, result)
         }
         tuple
     }

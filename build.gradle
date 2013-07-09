@@ -22,7 +22,8 @@ repositories {
 
 dependencies {
   compile(
-      'org.scala-lang:scala-library:2.10.1',
+      'org.scala-lang:scala-library:2.10.2',
+      'org.scala-lang:scala-reflect:2.10.2',
       'cascading:cascading-core:2.1.6',
       'cascading:cascading-local:2.1.6',
       'cascading:cascading-hadoop:2.1.6',
