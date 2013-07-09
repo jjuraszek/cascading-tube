@@ -11,6 +11,7 @@ import CustomOps._
 import Tube._
 import scala.language.reflectiveCalls
 
+//TODO debug op
 class Tube(private var pipe: Pipe) extends GroupOperator with RowOperator with FieldsOperator with MathOperator {
   /**
    * map of flow intersections allowing to dump intermediate data.
@@ -45,10 +46,10 @@ class Tube(private var pipe: Pipe) extends GroupOperator with RowOperator with F
    */
   def split(input: Fields = ALL)(filter: Map[String, String] => Boolean) = {
     val positiveTube = Tube("positive_" + pipe.getName, this.pipe)
-    positiveTube.filter(input)(filter)
+    positiveTube.filter(input)(!filter(_))
 
     val negativeTube = Tube("negative_" + pipe.getName, this.pipe)
-    negativeTube.filter(input)(!filter(_))
+    negativeTube.filter(input)(filter)
     (positiveTube, negativeTube)
   }
 

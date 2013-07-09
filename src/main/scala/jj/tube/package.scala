@@ -12,7 +12,7 @@ package object tube extends TupleConversions
 
 trait TupleConversions extends FieldsConversions {
   def toTupleEntry(schemeWithValues: Map[String, Any]) =
-    schemeWithValues.foldLeft(new TupleEntry(toField(schemeWithValues.keys.toSeq), Tuple.size(schemeWithValues.size))) {
+    schemeWithValues.foldLeft(new TupleEntry(schemeWithValues.keys.toList, Tuple.size(schemeWithValues.size))) {
       (te, entry) =>
         entry._2 match {
           case x: Boolean => te.setBoolean(entry._1, x)
@@ -44,7 +44,7 @@ trait FieldsConversions {
 
   implicit def toField(fields: String): Fields = f(fields)
 
-  implicit def toField(fields: Seq[String]): Fields = new Fields(fields: _*)
+  implicit def toField(fields: List[String]): Fields = new Fields(fields: _*)
 
   implicit def toField(product: Product): Fields = {
     val seq = product.productIterator.collect[String]({

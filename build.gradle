@@ -4,7 +4,7 @@ apply plugin: 'idea'
 
 
 group = 'org.tube'
-version = '1.0'
+version = '1.02'
 
 repositories {
   mavenCentral()
