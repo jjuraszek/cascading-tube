@@ -178,6 +178,7 @@ trait RowOperator {
    * @return fields of outScheme
    */
   //TODO each supporting List => List
+  //TODO operate on serialized value (ex. Json)
   def each(input: Fields = ALL, funcScheme: Fields = UNKNOWN, outScheme: Fields = ALL)
           (function: (Map[String, String] => Map[String, Any])) =
     this << new Each(this, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
@@ -188,8 +189,8 @@ trait RowOperator {
    * @param function transforming closure
    * @return row scheme. values from input replaced
    */
-  def replace(input: Fields = ALL)
-             (function: (Map[String, String] => Map[String, Any])) = each(input, ARGS, REPLACE)(function)
+  def replace(input: Fields = ALL, funcScheme: Fields = ARGS)
+             (function: (Map[String, String] => Map[String, Any])) = each(input, funcScheme, REPLACE)(function)
 
   /**
    * Filtering this tube according to defined closure
