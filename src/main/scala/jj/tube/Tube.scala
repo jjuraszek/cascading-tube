@@ -2,11 +2,15 @@ package jj.tube
 
 import cascading.pipe._
 import cascading.pipe.joiner.{Joiner, InnerJoin}
-import cascading.tuple.Fields
-import cascading.operation.{Insert, Filter, Buffer}
+import cascading.tuple.{TupleEntry, Fields}
+import cascading.tuple.Fields._
+import cascading.operation.{Insert, Buffer}
 import cascading.pipe.assembly._
 import cascading.operation.aggregator.First
 import cascading.operation.expression.ExpressionFunction
+import CustomOps._
+import Tube._
+import scala._
 
 object Tube {
   def apply(name: String) = new Tube(new Pipe(name))
@@ -20,6 +24,8 @@ object Tube {
 
 class Tube(var pipe: Pipe) extends Grouping with GroupOperator with RowOperator with FieldsTransform with MathOperation {
   def checkpoint = this << new Checkpoint(pipe)
+
+  def merge(tubes: Tube*) = this << new Merge(pipe :: tubes.map(_.pipe).toList: _*)
 
   def <<(op: Pipe) = {
     pipe = op
@@ -44,19 +50,25 @@ trait Grouping {
 trait RowOperator {
   this: Tube =>
 
-  def each(input: Fields = Fields.ALL, function: cascading.operation.Function[Any], output: Fields = Fields.ALL) = this << new Each(pipe, input, function, output)
+  @deprecated
+  def each(input: Fields = ALL, function: cascading.operation.Function[Any], output: Fields = ALL) = this << new Each(pipe, input, function, output)
 
-  def filter(fields: Fields = Fields.ALL, filter: Filter[Any]) = this << new Each(pipe, fields, filter)
+  def each(transformation: (Fields, Fields) = (ALL, UNKNOWN), outputOp: Fields = ALL)(function: TupleEntry => TupleEntry) = this << new Each(pipe, transformation._1, asFunction(function).setOutputScheme(transformation._2), outputOp)
+
+  def filter(input: Fields = ALL, filter: TupleEntry => Boolean) = this << new Each(pipe, input, asFilter(filter))
 }
 
 trait GroupOperator {
   this: Tube =>
 
-  def every(input: Fields = Fields.ALL, buffer: Buffer[Any], output: Fields = Fields.RESULTS) = this << new Every(pipe, input, buffer, output)
+  @deprecated
+  def every(input: Fields = ALL, buffer: Buffer[Any], output: Fields = RESULTS) = this << new Every(pipe, input, buffer, output)
+
+  def every(transformation: (Fields, Fields) = (ALL, UNKNOWN), outputOp: Fields = RESULTS)(buffer: (TupleEntry, Iterator[TupleEntry]) => List[TupleEntry]) = this << new Every(pipe, transformation._1, asBuffer(buffer).setOutputScheme(transformation._2), outputOp)
 
   def top(group: Fields, sort: Fields, reverse: Boolean = false, limit: Int = 1) = {
     groupBy(group, sort, reverse)
-    this << new Every(pipe, Fields.VALUES, new First(limit))
+    this << new Every(pipe, VALUES, new First(limit))
   }
 }
 
@@ -69,7 +81,7 @@ trait FieldsTransform {
 
   def retain(fields: Fields) = this << new Retain(pipe, fields)
 
-  def insert(field: Fields, value: String*) = this << new Each(pipe, new Insert(field, value: _*), Fields.ALL)
+  def insert(field: Fields, value: String*) = this << new Each(pipe, new Insert(field, value: _*), ALL)
 }
 
 trait MathOperation {

@@ -3,7 +3,7 @@ package jj
 import cascading.tuple.Fields
 
 package object tube {
-  //fields conversions
+  //input conversions
   implicit def aggregateFields(fields: Seq[Fields]): Fields = fields.reduceLeft[Fields]((f1, f2) => f1.append(f2))
 
   implicit def f(name: String): Fields = new Fields(name)
