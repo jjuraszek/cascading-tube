@@ -6,6 +6,7 @@ import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
 import cascading.tap.Tap;
 import cascading.tuple.TupleEntry;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -15,12 +16,16 @@ import java.sql.SQLException;
  * Schema for writing sql in batches.
  */
 public class WriteSqlScheme extends Scheme<Object, Void, PreparedStatement, Void, Object> {
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(WriteSqlScheme.class);
+
   private int batchSize = -1;
   private int currentBatch = 0;
 
   @Override
   public void sinkConfInit(FlowProcess<Object> flowProcess, Tap<Object, Void, PreparedStatement> tap, Object conf) {
-    this.batchSize = ((SqlSinkTap) tap).batchSize;
+    SqlSinkTap sqlTap = (SqlSinkTap) tap;
+    LOG.info("Init scheme for tap: "+sqlTap.toString());
+    this.batchSize = sqlTap.batchSize;
   }
 
   @Override
@@ -35,7 +40,6 @@ public class WriteSqlScheme extends Scheme<Object, Void, PreparedStatement, Void
       currentBatch++;
       if (currentBatch > batchSize) {
         flushStatement(ps);
-        currentBatch = 0;
       }
     } catch (SQLException e) {
       throw new IOException(e);
@@ -43,11 +47,9 @@ public class WriteSqlScheme extends Scheme<Object, Void, PreparedStatement, Void
   }
 
   @Override
-  public void sinkCleanup(FlowProcess<Object> flowProcess, SinkCall<Object, PreparedStatement> sinkCall) {
+  synchronized public void sinkCleanup(FlowProcess<Object> flowProcess, SinkCall<Object, PreparedStatement> sinkCall) {
     try {
-      if (currentBatch > 0) {
-        flushStatement(sinkCall.getOutput());
-      }
+      flushStatement(sinkCall.getOutput());
       sinkCall.getOutput().getConnection().commit();
       sinkCall.getOutput().getConnection().close();
       sinkCall.getOutput().close();
@@ -57,7 +59,10 @@ public class WriteSqlScheme extends Scheme<Object, Void, PreparedStatement, Void
   }
 
   synchronized private void flushStatement(PreparedStatement ps) throws SQLException {
-    ps.executeBatch();
+    if (currentBatch > 0) {
+      currentBatch = 0;
+      ps.executeBatch();
+    }
     ps.clearBatch();
     ps.clearParameters();
   }

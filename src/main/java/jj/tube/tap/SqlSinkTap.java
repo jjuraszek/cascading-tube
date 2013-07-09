@@ -15,10 +15,10 @@ public class SqlSinkTap extends SinkTap {
   private String driver;
   private String jdbcURL;
   private String user;
-  private String pass;
-  private String insertQuery;
-  private String id;
 
+  private String pass;
+
+  private String id;
   private SqlSinkTap() {
     setScheme(new WriteSqlScheme());
   }
@@ -30,6 +30,15 @@ public class SqlSinkTap extends SinkTap {
   @Override
   public String getIdentifier() {
     return id;
+  }
+
+  private String insertQuery;
+  @Override
+  public String toString() {
+    return "SqlSinkTap{" +
+        "insertQuery='" + insertQuery + '\'' +
+        ", batchSize=" + batchSize +
+        '}';
   }
 
   @Override
