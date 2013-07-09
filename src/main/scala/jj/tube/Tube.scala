@@ -2,7 +2,7 @@ package jj.tube
 
 import cascading.pipe._
 import cascading.pipe.joiner.{Joiner, InnerJoin}
-import cascading.tuple.{TupleEntry, Fields}
+import cascading.tuple.Fields
 import cascading.tuple.Fields._
 import cascading.operation.Insert
 import cascading.pipe.assembly._
@@ -36,27 +36,36 @@ trait Grouping {
 
   def aggregateBy(key: Fields, aggregators: AggregateBy*) = this << new AggregateBy(pipe, key, aggregators: _*)
 
+  //TODO incorporate every in that op
   def groupBy(key: Fields, sort: Fields, reverse: Boolean = false) = this << new GroupBy(pipe, key, sort, reverse)
 
-  def coGroup(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) = this << new CoGroup(pipe, leftKey, rightCollection, rightKey, joiner)
+  def coGroup(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
+    this << new CoGroup(pipe, leftKey, rightCollection, rightKey, joiner)
 
-  def hashJoin(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) = this << new HashJoin(pipe, leftKey, rightCollection, rightKey, joiner)
+  def hashJoin(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
+    this << new HashJoin(pipe, leftKey, rightCollection, rightKey, joiner)
 
   def unique(fields: Fields) = this << new Unique(pipe, fields)
 }
 
+//TODO method replace
 trait RowOperator {
   this: Tube =>
 
-  def each(input: Fields = ALL, funcScheme: Fields = UNKNOWN, outScheme: Fields = ALL)(function: (TupleEntry => TupleEntry)) = this << new Each(pipe, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
+  //TODO each supporting List => List
+  def each(input: Fields = ALL, funcScheme: Fields = UNKNOWN, outScheme: Fields = ALL)
+          (function: (Map[String, String] => Map[String, Any])) =
+    this << new Each(pipe, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
 
-  def filter(input: Fields = ALL)(filter: TupleEntry => Boolean) = this << new Each(pipe, input, asFilter(filter))
+  def filter(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(pipe, input, asFilter(filter))
 }
 
 trait GroupOperator {
   this: Tube =>
 
-  def every(input: Fields = ALL, bufferScheme: Fields = UNKNOWN, outScheme: Fields = RESULTS)(buffer: (TupleEntry, Iterator[TupleEntry]) => List[TupleEntry]) = this << new Every(pipe, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
+  def every(input: Fields = ALL, bufferScheme: Fields = UNKNOWN, outScheme: Fields = RESULTS)
+           (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) =
+    this << new Every(pipe, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
 
   def top(group: Fields, sort: Fields, reverse: Boolean = false, limit: Int = 1) = {
     groupBy(group, sort, reverse)
@@ -99,21 +108,15 @@ trait MathOperation {
 
   def math(leftOp: String, rightOp: String, outField: String)(func: (Double, Double) => Double) = {
     this << each((leftOp, rightOp), outField) {
-      row: TupleEntry =>
-        val tuple = tupleEntry(outField)
-        val result = func(row.getDouble(leftOp), row.getDouble(rightOp))
-        tuple.setDouble(outField, result)
-        tuple
+      row =>
+        Map(outField -> func(row(leftOp).toDouble, row(rightOp).toDouble))
     }
   }
 
-  def math(operand: String, outField: String)(func: (Double) => Double) = {
+  def math(operand: String, outField: String)(func: Double => Double) = {
     this << each(operand, outField) {
-      row: TupleEntry =>
-        val tuple = tupleEntry(outField)
-        val result = func(row.getDouble(operand))
-        tuple.setDouble(outField, result)
-        tuple
+      row =>
+        Map(outField -> func(row(operand).toDouble))
     }
   }
 }

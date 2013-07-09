@@ -19,26 +19,4 @@ package object tube {
     }).toList
     new Fields(seq: _*)
   }
-
-  //tuple entry
-  def t(values: Object*) = {
-    new Tuple(values: _*)
-  }
-
-  implicit def toTuple(product: Product): Tuple = {
-    new Tuple(seqAsJavaList(product.productIterator.toList.toSeq))
-  }
-
-  def tupleEntry(schemeWithValues: Map[String, String]) = {
-    val te = new TupleEntry(toField(schemeWithValues.keys.toSeq), Tuple.size(schemeWithValues.size))
-    schemeWithValues.foreach {
-      entry =>
-        te.setString(entry._1, entry._2)
-    }
-    te
-  }
-
-  def tupleEntry(fields: Fields) = {
-    new TupleEntry(fields, Tuple.size(fields.size))
-  }
 }
