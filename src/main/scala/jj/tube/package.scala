@@ -8,35 +8,7 @@ import cascading.scheme.hadoop.TextDelimited
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
  */
-package object tube extends TupleConversions {
-
-  type Io = Tap[Any, Any, Any]
-
-  /**
-   * Input csv tap. Tap should have not headers. Tap will ignore situation where there is not enough columns for provided scheme (null for missing fields).
-   *
-   * @param path hdfs path
-   * @param scheme fields name mapped for columns
-   * @param delimiter
-   * @param escape
-   * @return sink ready for use on hadoop
-   */
-  def flexCsvIn(path: String, scheme: List[String], delimiter: String = ",", escape: String = "\"") = {
-    new Hfs(new TextDelimited(new Fields(scheme: _*), null, false, false, delimiter, false, escape, null, true), path).asInstanceOf[Io]
-  }
-
-  /**
-   * Output csv tap. It will replace hdfs file if exist. Write down every field from tap.
-   *
-   * @param path hdfs path
-   * @param delimiter
-   * @param escape
-   * @return sink ready for use on hadoop
-   */
-  def replacingCsvOut(path: String, delimiter: String = ",", escape: String = "\"") = {
-    new Hfs(new TextDelimited(false, delimiter, escape), path, SinkMode.REPLACE).asInstanceOf[Io]
-  }
-}
+package object tube extends TupleConversions
 
 trait TupleConversions extends FieldsConversions {
   def toTupleEntry(schemeWithValues: Map[String, Any]) =
