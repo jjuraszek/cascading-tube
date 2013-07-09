@@ -43,6 +43,13 @@ Maven repo:
   <id>conjars.org</id>
   <url>http://conjars.org/repo</url>
 </repository>
+...
+<dependency>
+  <groupId>org.clojars.jj</groupId>
+  <artifactId>cascading-tube</artifactId>
+  <!--current version defined in build.gradle -->
+  <version>0.15</version>
+</dependency>
 ```
 
 Supported versions of scala, hadoop and cascading:
