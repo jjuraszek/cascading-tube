@@ -4,7 +4,7 @@ apply plugin: 'idea'
 
 
 group = 'org.clojars.jj'
-version = '0.9'
+version = '0.11'
 
 configurations {
   deployerJars
