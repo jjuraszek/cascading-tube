@@ -45,17 +45,16 @@ Maven repo:
 </repository>
 ...
 <dependency>
-  <groupId>org.clojars.jj</groupId>
+  <groupId>org.tube</groupId>
   <artifactId>cascading-tube</artifactId>
   <!--current version defined in build.gradle -->
-  <version>0.15</version>
+  <version>1.0</version>
 </dependency>
 ```
 
 Supported versions of scala, hadoop and cascading:
 * org.scala-lang:scala-library:2.10.2
 * cascading:cascading-core:2.1.6
-* org.apache.hadoop:hadoop-client:2.0.0-cdh4.2.1
 
 You can compile your own dependencies setup. Replacing only hadoop-client lib should be notimer because tube is not using it directly (scala compiler need it).
 
