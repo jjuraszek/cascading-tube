@@ -5,6 +5,8 @@ cascading-tube
 Tiny wrapper around hadoop cascading make it easy to chaining operations. All written in scala but it is not hiding the the cascading framework.
 You can always fallback to cascading style of defining flow if you felt you missing something in tube.
 
+There is also ```package
+
 **I am looking anybody who wants to help in developing this lib.**
 
 ## Motivation ##
