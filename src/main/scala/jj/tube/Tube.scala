@@ -59,7 +59,7 @@ class Tube(private var pipe: Pipe) extends GroupOperator with RowOperator with F
    */
   def <<(op: Pipe => Pipe): Tube = this << op(this.pipe)
 
-  protected[this] def <<(op: Pipe): Tube = {
+  def <<(op: Pipe): Tube = {
     pipe = op
     this
   }
@@ -107,11 +107,9 @@ trait GroupOperator {
    * @return schema from outScheme
    */
   def groupBy(key: Fields, sort: Fields = null, reverse: Boolean = false)
-             (input: Fields = ALL, bufferScheme: Fields = UNKNOWN, outScheme: Fields = RESULTS)
-             (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) ={
-    this << new GroupBy(this, key, sort, reverse)
-    this << new Every(this, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
-}
+             (bufferScheme: Fields = UNKNOWN, input: Fields = ALL, outScheme: Fields = RESULTS)
+             (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) =
+    this << new GroupBy(this, key, sort, reverse) << new Every(this, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
 
   /**
    * Take top n rows from each group
@@ -122,9 +120,8 @@ trait GroupOperator {
    * @param limit how many rows to keep from each group
    * @return rows fields are not altered. Only row count is different
    */
-  def top(group: Fields, sort: Fields, reverse: Boolean = false, limit: Int = 1) ={
-    this << new GroupBy(this, group, sort, reverse)
-  this<< new Every(this, VALUES, new First(limit))}
+  def top(group: Fields, sort: Fields, reverse: Boolean = false, limit: Int = 1) =
+    this << new GroupBy(this, group, sort, reverse) << new Every(this, VALUES, new First(limit))
 
   /**
    * Join this tube with other big tube.
@@ -151,7 +148,6 @@ trait GroupOperator {
     this << new HashJoin(this, leftKey, rightCollection, rightKey, joiner)
 }
 
-//TODO method replace
 trait RowOperator {
   this: Tube =>
 
@@ -178,6 +174,15 @@ trait RowOperator {
   def each(input: Fields = ALL, funcScheme: Fields = UNKNOWN, outScheme: Fields = ALL)
           (function: (Map[String, String] => Map[String, Any])) =
     this << new Each(this, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
+
+  /**
+   * Allow replace fields in input row
+   * @param input fields to replace
+   * @param function transforming closure
+   * @return row scheme. values from input replaced
+   */
+  def replace(input: Fields = ALL)
+             (function: (Map[String, String] => Map[String, Any])) = each(input, ARGS, REPLACE)(function)
 
   /**
    * Filtering this tube according to defined closure
