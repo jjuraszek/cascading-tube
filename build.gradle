@@ -1,9 +1,10 @@
 apply plugin: 'scala'
 apply plugin: 'maven'
+apply plugin: 'idea'
 
 
 group = 'org.clojars.jj'
-version = '0.1-SNAPSHOT'
+version = '0.3'
 
 configurations {
   deployerJars
@@ -21,7 +22,8 @@ dependencies {
       'org.scala-lang:scala-library:2.10.1',
       'cascading:cascading-core:2.1.6',
       'cascading:cascading-local:2.1.6',
-      'cascading:cascading-hadoop:2.1.6'
+      'cascading:cascading-hadoop:2.1.6',
+      'org.apache.hadoop:hadoop-client:2.0.4-alpha'
   )
   deployerJars 'org.apache.ant:ant-jsch:1.7.1', 'jsch:jsch:0.1.29'
 }
@@ -45,4 +47,11 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 task javadocJar(type: Jar, dependsOn: javadoc) {
   classifier = 'javadoc'
   from javadoc.destinationDir
+}
+
+idea {
+
+  module {
+    downloadSources = true
+  }
 }
