@@ -10,6 +10,7 @@ import cascading.operation.aggregator.First
 import CustomOps._
 import Tube._
 import scala.language.reflectiveCalls
+import cascading.operation.buffer.FirstNBuffer
 
 /**
  * Companion object creating tube and containing implicit conversions allowing usage of tube requiring pipe and pipe to tube.
@@ -128,7 +129,7 @@ trait GroupOperator {
    * @return rows fields are not altered. Only row count is different
    */
   def top(group: Fields, sort: Fields, descending: Boolean = false, limit: Int = 1) =
-    this << new GroupBy(this, group, sort, descending) << new Every(this, VALUES, new First(limit))
+    this << new GroupBy(this, group, sort, descending) << new FirstNBuffer(limit)
 
   /**
    * Join this tube with other big tube.
