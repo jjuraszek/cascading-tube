@@ -129,7 +129,7 @@ trait GroupOperator {
    * @return rows fields are not altered. Only row count is different
    */
   def top(group: Fields, sort: Fields, descending: Boolean = false, limit: Int = 1) =
-    this << new GroupBy(this, group, sort, descending) << new Every(this, VALUES, new FirstNBuffer(limit))
+    this << new GroupBy(this, group, sort, descending) << new Every(this, ALL, new FirstNBuffer(limit), ARGS)
 
   /**
    * Join this tube with other big tube.
