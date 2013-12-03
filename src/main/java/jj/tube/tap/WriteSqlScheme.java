@@ -6,7 +6,6 @@ import cascading.scheme.SinkCall;
 import cascading.scheme.SourceCall;
 import cascading.tap.Tap;
 import cascading.tuple.TupleEntry;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -16,15 +15,12 @@ import java.sql.SQLException;
  * Schema for writing sql in batches.
  */
 public class WriteSqlScheme extends Scheme<Object, Void, PreparedStatement, Void, Object> {
-  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(WriteSqlScheme.class);
-
   private int batchSize = -1;
   private int currentBatch = 0;
 
   @Override
   public void sinkConfInit(FlowProcess<Object> flowProcess, Tap<Object, Void, PreparedStatement> tap, Object conf) {
     SqlSinkTap sqlTap = (SqlSinkTap) tap;
-    LOG.info("Init scheme for tap: "+sqlTap.toString());
     this.batchSize = sqlTap.batchSize;
   }
 

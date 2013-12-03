@@ -53,19 +53,16 @@ public class SqlSinkTap extends SinkTap {
     }
   }
 
-  //TODO allow table creation
   @Override
   public boolean createResource(Object conf) throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  //TODO allow for sql statement cleaning the table for current input
   @Override
   public boolean deleteResource(Object conf) throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  //TODO check table existance
   @Override
   public boolean resourceExists(Object conf) throws IOException {
     throw new UnsupportedOperationException();

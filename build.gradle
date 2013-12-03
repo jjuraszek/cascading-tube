@@ -5,7 +5,7 @@ apply plugin: 'idea'
 
 
 group = 'org.tube'
-version = '1.11'
+version = '1.12'
 
 compileJava{
   sourceCompatibility = '1.6'
@@ -26,9 +26,14 @@ repositories {
 dependencies {
   compile(
       'org.scala-lang:scala-library:2.10.3',
-      'cascading:cascading-core:2.2.0',
-      'cascading:cascading-local:2.2.0',
-      'cascading:cascading-hadoop:2.2.0',
+      'cascading:cascading-core:2.5.1',
+      'cascading:cascading-local:2.5.1',
+      'cascading:cascading-hadoop2-mr1:2.5.1',
+      'cascading:cascading-hadoop:2.5.1',
+  )
+  testCompile(
+      'org.scalatest:scalatest_2.10:2.0',
+      'org.slf4j:slf4j-nop:1.7.5'
   )
 }
 
