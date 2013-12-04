@@ -2,10 +2,7 @@ cascading-tube
 ==============
 ### *patterns for processing* ###
 
-Tiny wrapper around hadoop cascading make it easy to chaining operations. All written in scala but it is not hiding the the cascading framework.
-You can always fallback to cascading style of defining flow if you felt you missing something in tube.
-
-There is also ```package
+Tiny wrapper around hadoop cascading make it easy to chaining operations. All written in scala but it is not hiding the the cascading framework. You can always fallback to cascading style of defining flow if you felt you missing something in tube. Tube is using maps for providing any custom operations (the plane is to use also PartialFunctions) and because of that there is no limit of number of input columns for neither of that operations. 
 
 **I am looking anybody who wants to help in developing this lib.**
 
@@ -13,6 +10,20 @@ There is also ```package
 
 Providing clean and not so complicated in use and debug wrapper which can be incorporated in your current hadoop processing project.
 Writing MR hadoop jobs in tube is going to be more functional but in the other hand it will never hide you from cascading Pipe class.
+
+## Roadmap ##
+- **0.2** Divide project into submodules:
+  - **cascading-tube.testing** Containing class simplify testing of your flows by providing MemoryTap and boilerplate for running it within unit testing scope. Provide samples as unit test of tube.
+  - **cascading-tube.core** Tube object and every operators refactored to be in separated files accordingly to logic purpose.
+  - **cascading-tube.io** Place for SQL sink tap allowing major use case of presenting MR results to more responsive layer. Module for standard CSV tap builders and real flow runner using JobConf.
+- **0.3.x** Provide builders for joins and coGroups like ops including list of output fields.
+- **0.4.x** Provide builders for buffers, functions and filters. Deprecation of _currying_ style of those functions.
+- **0.5.x** Support new operations from *cascading 2.5.x* like BufferJoin and more
+- **0.6.x** Tube will lose deprecation functions and small improvement will be added
+- **1.0.x** Updated road map and every libs dependencies
+- **1.1.x** Support buffers, filters and functions to be defined as PartialFunction (no need for Map-s all over the place but number of input fields will be 22)
+
+Despite of that **cascading-tube.testing** will be constantly extended to show the capability of tube.
 
 ## Sample use case ##
 
@@ -55,8 +66,8 @@ Maven repo:
 ```
 
 Supported versions of scala, hadoop and cascading:
-* org.scala-lang:scala-library:2.10.2
-* cascading:cascading-core:2.1.6
+* org.scala-lang:scala-library:2.10.3
+* cascading:cascading-core:2.5.1
 
 You can compile your own dependencies setup. Replacing only hadoop-client lib should be notimer because tube is not using it directly (scala compiler need it).
 
