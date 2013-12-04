@@ -7,6 +7,8 @@ import cascading.scheme.SourceCall;
 import cascading.tap.Tap;
 import cascading.tuple.*;
 import cascading.util.CloseableIterator;
+import cascading.util.SingleCloseableInputIterator;
+import cascading.util.SingleValueCloseableIterator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -17,19 +19,25 @@ import java.util.Set;
 
 @SuppressWarnings("unchecked")
 public class MemoryTap extends Tap {
+  private final String id = "ID_" + System.currentTimeMillis();
   public final Set<String> content = Sets.newHashSet();
-  private String id = "ID_" + System.currentTimeMillis();
 
   private CloseableIterator input;
+
+  private MemoryTap(){
+
+  }
 
   public static MemoryTap input(final String[] fields, Set<Object[]> input) {
     MemoryTap tap = new MemoryTap();
     tap.setScheme(new NullScheme(new Fields(fields), Fields.UNKNOWN) {
       @Override
       public boolean source(FlowProcess flowProcess, SourceCall sourceCall) throws IOException {
-        Tuple tuple = (Tuple) sourceCall.getInput();
-        boolean newDate = tuple != sourceCall.getIncomingEntry().getTuple();
-        sourceCall.getIncomingEntry().setTuple(tuple);
+        Iterator<Tuple> tuples = (Iterator<Tuple>) sourceCall.getInput();
+        boolean newDate = tuples.hasNext();
+        if(newDate){
+          sourceCall.getIncomingEntry().setTuple(tuples.next());
+        }
         return newDate;
       }
     });
@@ -39,25 +47,9 @@ public class MemoryTap extends Tap {
     }
 
     final Iterator it = tuples.iterator();
-    tap.input = new CloseableIterator() {
+    tap.input = new SingleValueCloseableIterator(it){
       @Override
-      public void close() throws IOException {
-      }
-
-      @Override
-      public boolean hasNext() {
-        return it.hasNext();
-      }
-
-      @Override
-      public Object next() {
-        return it.next();
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
+      public void close() throws IOException {}
     };
     return tap;
   }
