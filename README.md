@@ -16,12 +16,12 @@ Writing MR hadoop jobs in tube is going to be more functional but in the other h
   - **cascading-tube.testing** Containing class simplify testing of your flows by providing MemoryTap and boilerplate for running it within unit testing scope. Provide samples as unit test of tube.
   - **cascading-tube.core** Tube object and every operators refactored to be in separated files accordingly to logic purpose.
   - **cascading-tube.io** Place for SQL sink tap allowing major use case of presenting MR results to more responsive layer. Module for standard CSV tap builders and real flow runner using JobConf.
-- **0.3.x** Provide builders for joins and coGroups like ops including list of output fields.
-- **0.4.x** Provide builders for buffers, functions and filters. Deprecation of _currying_ style of those functions.
-- **0.5.x** Support new operations from *cascading 2.5.x* like BufferJoin and more
-- **0.6.x** Tube will lose deprecation functions and small improvement will be added
-- **1.0.x** Updated road map and every libs dependencies
-- **1.1.x** Support buffers, filters and functions to be defined as PartialFunction (no need for Map-s all over the place but number of input fields will be 22)
+- **1.3.x** Provide builders for joins and coGroups like ops including list of output fields.
+- **1.4.x** Provide builders for buffers, functions and filters. Deprecation of _currying_ style of those functions.
+- **1.5.x** Support new operations from *cascading 2.5.x* like BufferJoin and more
+- **1.6.x** Tube will lose deprecation functions and small improvement will be added
+- **2.0.x** Updated road map and every libs dependencies
+- **2.1.x** Support buffers, filters and functions to be defined as PartialFunction (no need for Map-s all over the place but number of input fields will be 22)
 
 Despite of that **cascading-tube.testing** will be constantly extended to show the capability of tube.
 
