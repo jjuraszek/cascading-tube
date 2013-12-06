@@ -6,7 +6,6 @@ import cascading.tuple.Fields
 import cascading.tuple.Fields._
 import cascading.operation.{DebugLevel, Insert, Debug}
 import cascading.pipe.assembly._
-import cascading.operation.aggregator.First
 import CustomOps._
 import Tube._
 import scala.language.reflectiveCalls

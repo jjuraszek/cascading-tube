@@ -22,6 +22,6 @@ class SampleTest extends FunSuite with CascadingFlowTest with Matchers{
       .addSource(inputWords, inTap)
       .addTailSink(inputWords, outTap))
 
-    outTap.content should contain only ("a", "abc", "ab")
+    outTap.result should contain only ("a", "abc", "ab")
   }
 }

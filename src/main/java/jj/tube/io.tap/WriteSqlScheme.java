@@ -1,4 +1,4 @@
-package jj.tube.tap;
+package jj.tube.io.tap;
 
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;

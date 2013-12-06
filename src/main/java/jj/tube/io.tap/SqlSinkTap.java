@@ -1,4 +1,4 @@
-package jj.tube.tap;
+package jj.tube.io.tap;
 
 import cascading.flow.FlowProcess;
 import cascading.tap.SinkTap;
@@ -86,11 +86,11 @@ public class SqlSinkTap extends SinkTap {
   }
 
   /**
-   * Allow to build tap properly
+   * Allow to build io.tap properly
    */
   private static class SqlSinkTapBuilder {
     /**
-     * Modifiable instance of tap
+     * Modifiable instance of io.tap
      */
     public SqlSinkTap tap = new SqlSinkTap();
 
