@@ -1,0 +1,15 @@
+artifactId = 'cascading-tube.io'
+
+dependencies {
+  compile(
+    project(':core')
+  )
+}
+
+task deploy(dependsOn: ['clean', 'install', 'uploadArchives'])
+
+artifacts{
+  archives sourcesJar
+  archives javadocJar
+}
+

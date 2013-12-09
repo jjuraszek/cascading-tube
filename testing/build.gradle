@@ -1,0 +1,22 @@
+artifactId = 'cascading-tube.testing'
+
+dependencies {
+  compile(
+      project(':core'),
+      project(':io')
+  )
+  testCompile(
+      'org.scalatest:scalatest_2.10:2.0',
+      'org.slf4j:slf4j-nop:1.7.5',
+      'junit:junit:4.+'
+  )
+}
+
+tasks.withType(ScalaCompile) {
+  scalaCompileOptions.useAnt = false
+  scalaCompileOptions.additionalParameters = ['-target:jvm-1.6','-feature','-language:implicitConversions']
+  configure(scalaCompileOptions.forkOptions) {
+    memoryMaximumSize = '1g'
+    jvmArgs = ['-XX:MaxPermSize=256m']
+  }
+}
