@@ -13,9 +13,9 @@ Writing MR hadoop jobs in tube is going to be more functional but in the other h
 
 ## Roadmap ##
 - **2.0.x** Divide project into submodules:
-  - **cascading-tube.testing** Containing class simplify testing of your flows by providing MemoryTap and boilerplate for running it within unit testing scope. Provide samples as unit test of tube.
-  - **cascading-tube.core** Tube object and every operators refactored to be in separated files accordingly to logic purpose.
-  - **cascading-tube.io** Place for SQL sink tap allowing major use case of presenting MR results to more responsive layer. Module for standard CSV tap builders and real flow runner using JobConf.
+  - **tube-testing** Containing class simplify testing of your flows by providing MemoryTap and boilerplate for running it within unit testing scope. Provide samples as unit test of tube.
+  - **tube-core** Tube object and every operators refactored to be in separated files accordingly to logic purpose.
+  - **tube-io** Place for SQL sink tap allowing major use case of presenting MR results to more responsive layer. Module for standard CSV tap builders and real flow runner using JobConf.
 - **3.0.x** Provide builders for joins and coGroups like ops including list of output fields.
 - **3.1.x** Provide builders for buffers, functions and filters. Deprecation of _currying_ style of those functions.
 - **3.2.x** Support new operations from *cascading 2.5.x* like BufferJoin and more
@@ -59,9 +59,21 @@ Maven repo:
 ...
 <dependency>
   <groupId>org.tube</groupId>
-  <artifactId>cascading-tube</artifactId>
+  <artifactId>tube-core</artifactId>
   <!--current version defined in build.gradle -->
-  <version>1.0</version>
+  <version>2.0.0</version>
+</dependency>
+<dependency>
+  <groupId>org.tube</groupId>
+  <artifactId>tube-io</artifactId>
+  <!--current version defined in build.gradle -->
+  <version>2.0.0</version>
+</dependency>
+<dependency>
+  <groupId>org.tube</groupId>
+  <artifactId>tube-testing</artifactId>
+  <!--current version defined in build.gradle -->
+  <version>2.0.0</version>
 </dependency>
 ```
 
