@@ -12,7 +12,7 @@ trait BaseFlowTest {
     new LocalFlowConnector().connect(flowDef).complete()
   }
 
-  def in(scheme: Array[String], data: Set[Array[String]]) = MemTap.input(data, scheme:_*)
+  def inTap(scheme: Array[String], data: Set[Array[String]]) = MemTap.input(data, scheme:_*)
 
-  def out = MemTap.output()
+  def outTap = MemTap.output()
 }

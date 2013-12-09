@@ -1,9 +1,11 @@
+task deploy(dependsOn: [':tube-core:uploadArchives',':tube-io:uploadArchives',':tube-testing:uploadArchives'])
+
 subprojects {
   apply plugin: 'scala'
   apply plugin: 'maven'
 
   group = 'org.tube'
-  version = '2.0.0'
+  version = '2.0.1'
 
   dependencies {
     compile(
@@ -28,6 +30,11 @@ subprojects {
   task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
+  }
+
+  artifacts {
+    archives sourcesJar
+    archives javadocJar
   }
 
   repositories {

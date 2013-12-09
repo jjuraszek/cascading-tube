@@ -7,11 +7,5 @@ dependencies {
   )
 }
 
-task deploy(dependsOn: ['clean', 'install', 'uploadArchives'])
-
-artifacts {
-  archives sourcesJar
-  archives javadocJar
-}
 
 

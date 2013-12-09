@@ -45,6 +45,8 @@ abstract class MemTap(val id:String ="ID_" + System.currentTimeMillis) extends T
   override def openForWrite(flowProcess: FlowProcess[Nothing], o: Nothing) =
     new TupleEntrySchemeCollector[Nothing, AnyRef](flowProcess, getScheme, result, getIdentifier)
 
+  lazy val content = result.toSet
+
   override def getIdentifier = id
   override def setScheme(scheme: Scheme[Nothing, Iterator[Tuple], Nothing, _, _]) = super.setScheme(scheme)
   override def createResource(conf: Nothing) = throw new UnsupportedOperationException
