@@ -1,81 +1,62 @@
-apply plugin: 'java'
-apply plugin: 'scala'
-apply plugin: 'maven'
-apply plugin: 'idea'
-
-
-group = 'org.tube'
-version = '1.13'
-
-compileJava{
-  sourceCompatibility = '1.6'
-  targetCompatibility = '1.6'
-}
-
-repositories {
-  mavenLocal()
-  mavenCentral()
-  maven {
-    url 'http://conjars.org/repo'
-  }
-  maven {
-    url 'https://repository.cloudera.com/artifactory/cloudera-repos'
-  }
-}
-
-dependencies {
-  compile(
-      'org.scala-lang:scala-library:2.10.3',
-      'cascading:cascading-core:2.5.1',
-      'cascading:cascading-local:2.5.1',
-      'cascading:cascading-hadoop2-mr1:2.5.1',
-      'cascading:cascading-hadoop:2.5.1',
-  )
-  testCompile(
-      'org.scalatest:scalatest_2.10:2.0',
-      'org.slf4j:slf4j-nop:1.7.5',
-      'junit:junit:4.+'
-  )
-}
-
-tasks.withType(ScalaCompile) {
-  scalaCompileOptions.useAnt = false
-  scalaCompileOptions.additionalParameters = ['-target:jvm-1.6','-feature','-language:implicitConversions']
-  configure(scalaCompileOptions.forkOptions) {
-    memoryMaximumSize = '1g'
-    jvmArgs = ['-XX:MaxPermSize=256m']
-  }
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-  classifier = 'sources'
-  from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-  classifier = 'javadoc'
-  from javadoc.destinationDir
-}
-
-idea {
-  module {
-    downloadSources = true
-  }
-}
-
-task deploy(dependsOn: ['clean', 'install', 'uploadArchives'])
-
-artifacts{
-  archives sourcesJar
-  archives javadocJar
-}
-
-uploadArchives {
-  repositories {
-    mavenDeployer {
-      repository(url: "http://conjars.org/repo"){
-        authentication(userName: conjarUsr,password: conjarPswd)
-      }
+subprojects{
+    apply plugin: 'scala'
+    dependencies {
+        compile(
+                'org.scala-lang:scala-library:2.10.3'
+        )
     }
-  }
+
+    tasks.withType(ScalaCompile) {
+        scalaCompileOptions.useAnt = false
+        scalaCompileOptions.additionalParameters = ['-target:jvm-1.6','-feature','-language:implicitConversions']
+        configure(scalaCompileOptions.forkOptions) {
+            memoryMaximumSize = '1g'
+            jvmArgs = ['-XX:MaxPermSize=256m']
+        }
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+}
+
+allprojects {
+    apply plugin: 'idea'
+    apply plugin: 'maven'
+
+    group = 'org.tube'
+    version = '1.13'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            url 'http://conjars.org/repo'
+        }
+        maven {
+            url 'https://repository.cloudera.com/artifactory/cloudera-repos'
+        }
+    }
+
+    idea {
+        module {
+            downloadSources = true
+        }
+    }
+
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                repository(url: "http://conjars.org/repo"){
+                    authentication(userName: conjarUsr,password: conjarPswd)
+                }
+            }
+        }
+    }
 }
