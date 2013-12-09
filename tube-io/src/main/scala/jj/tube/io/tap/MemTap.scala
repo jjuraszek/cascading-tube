@@ -7,9 +7,10 @@ import cascading.flow.FlowProcess
 import cascading.scheme.{Scheme, SinkCall, SourceCall, NullScheme}
 import scala.collection.mutable.{Set => MutSet}
 import scala.collection.Set
+import java.util.UUID
 
 object MemTap {
-  def input(data: Set[Array[String]], fields: String*) = new MemTap() {
+  def input(data: List[Array[String]], fields: String*) = new MemTap() {
     input = new SingleValueCloseableIterator[Iterator[Tuple]](data.map(new Tuple(_: _*)).iterator) {
       override def close() {}
     }
@@ -35,7 +36,7 @@ object MemTap {
   }
 }
 
-abstract class MemTap(val id:String ="ID_" + System.currentTimeMillis) extends Tap[Nothing, Iterator[Tuple], Nothing] {
+abstract class MemTap(val id:String =UUID.randomUUID().toString) extends Tap[Nothing, Iterator[Tuple], Nothing] {
   val result = MutSet.empty[String]
   var input: CloseableIterator[Iterator[Tuple]] = null
 

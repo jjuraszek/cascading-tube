@@ -10,9 +10,9 @@ import cascading.flow.FlowDef
 @RunWith(classOf[JUnitRunner])
 class SampleTest extends FunSuite with BaseFlowTest with Matchers{
   test("should filter input longer then 3 signs"){
-    val inTap = in(Array("word"),Set(
+    val in = inTap(Array("word"),List(
       Array("a"),Array("abc"),Array("abcd"),Array("ab")))
-    val outTap = out
+    val out = outTap
 
     val inputWords = Tube("words")
       .filter(){
@@ -20,9 +20,9 @@ class SampleTest extends FunSuite with BaseFlowTest with Matchers{
       }
 
     runFlow(FlowDef.flowDef
-      .addSource(inputWords, inTap)
-      .addTailSink(inputWords, outTap))
+      .addSource(inputWords, in)
+      .addTailSink(inputWords, out))
 
-    outTap.result should contain only ("a", "abc", "ab")
+    out.content should contain only ("a", "abc", "ab")
   }
 }
