@@ -1,62 +1,63 @@
-subprojects{
-    apply plugin: 'scala'
-    dependencies {
-        compile(
-                'org.scala-lang:scala-library:2.10.3'
-        )
-    }
+subprojects {
+  apply plugin: 'scala'
+  apply plugin: 'maven'
 
-    tasks.withType(ScalaCompile) {
-        scalaCompileOptions.useAnt = false
-        scalaCompileOptions.additionalParameters = ['-target:jvm-1.6','-feature','-language:implicitConversions']
-        configure(scalaCompileOptions.forkOptions) {
-            memoryMaximumSize = '1g'
-            jvmArgs = ['-XX:MaxPermSize=256m']
+  group = 'org.tube'
+  version = '2.0.0'
+
+  dependencies {
+    compile(
+        'org.scala-lang:scala-library:2.10.3'
+    )
+  }
+
+  tasks.withType(ScalaCompile) {
+    scalaCompileOptions.useAnt = false
+    scalaCompileOptions.additionalParameters = ['-target:jvm-1.6', '-feature', '-language:implicitConversions']
+    configure(scalaCompileOptions.forkOptions) {
+      memoryMaximumSize = '1g'
+      jvmArgs = ['-XX:MaxPermSize=256m']
+    }
+  }
+
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+  }
+
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+  }
+
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+      url 'http://conjars.org/repo'
+    }
+    maven {
+      url 'https://repository.cloudera.com/artifactory/cloudera-repos'
+    }
+  }
+
+  uploadArchives {
+    repositories {
+      mavenDeployer {
+        repository(url: "http://conjars.org/repo") {
+          authentication(userName: conjarUsr, password: conjarPswd)
         }
+      }
     }
-
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
+  }
 }
 
 allprojects {
-    apply plugin: 'idea'
-    apply plugin: 'maven'
+  apply plugin: 'idea'
 
-    group = 'org.tube'
-    version = '2.0'
-
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        maven {
-            url 'http://conjars.org/repo'
-        }
-        maven {
-            url 'https://repository.cloudera.com/artifactory/cloudera-repos'
-        }
+  idea {
+    module {
+      downloadSources = true
     }
-
-    idea {
-        module {
-            downloadSources = true
-        }
-    }
-
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                repository(url: "http://conjars.org/repo"){
-                    authentication(userName: conjarUsr,password: conjarPswd)
-                }
-            }
-        }
-    }
+  }
 }

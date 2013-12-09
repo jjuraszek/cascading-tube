@@ -1,5 +1,3 @@
-artifactId = 'cascading-tube'
-
 dependencies {
   compile(
       'cascading:cascading-core:2.5.1',
@@ -11,8 +9,9 @@ dependencies {
 
 task deploy(dependsOn: ['clean', 'install', 'uploadArchives'])
 
-artifacts{
+artifacts {
   archives sourcesJar
   archives javadocJar
 }
+
 

@@ -1,1 +1,1 @@
-include 'core', 'io', 'testing'
+include 'tube-core', 'tube-io', 'tube-testing'

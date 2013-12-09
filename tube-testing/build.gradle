@@ -1,0 +1,11 @@
+dependencies {
+  compile(
+      project(':tube-core'),
+      project(':tube-io')
+  )
+  testCompile(
+      'org.scalatest:scalatest_2.10:2.0',
+      'org.slf4j:slf4j-nop:1.7.5',
+      'junit:junit:4.+'
+  )
+}
