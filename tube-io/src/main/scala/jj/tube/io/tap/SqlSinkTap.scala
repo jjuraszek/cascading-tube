@@ -31,38 +31,38 @@ object SqlSinkTap{
 
 
 class SqlSinkTap(val insertQuery: String, val user: String, val pass: String, val jdbcURL: String, val driver: String, val batchSize: Int)
-  extends SinkTap[Nothing, Nothing] {
+  extends SinkTap[Object, Object] {
 
   override def getIdentifier = insertQuery.replaceAll("\\s+", " ")
 
-  override def openForWrite(flowProcess: FlowProcess[Nothing], o: Nothing) = try {
+  override def openForWrite(flowProcess: FlowProcess[Object], o: Object) = try {
     Class.forName(driver)
     val conn = DriverManager.getConnection(jdbcURL, user, pass)
     conn.setAutoCommit(false)
-    new TupleEntrySchemeCollector[Nothing, Nothing](flowProcess, getScheme, conn.prepareStatement(insertQuery).asInstanceOf[Nothing], getIdentifier())
+    new TupleEntrySchemeCollector[Object, Object](flowProcess, getScheme, conn.prepareStatement(insertQuery).asInstanceOf[Object], getIdentifier())
   } catch {
     case e: SQLException => throw new IOException(e)
   }
 
   override def toString = s"SqlSinkTap{insertQuery=$insertQuery,batchSize=$batchSize }"
 
-  override def createResource(conf: Nothing) = throw new UnsupportedOperationException
-  override def deleteResource(conf: Nothing) = throw new UnsupportedOperationException
-  override def resourceExists(conf: Nothing) = throw new UnsupportedOperationException
-  override def getModifiedTime(conf: Nothing) = throw new UnsupportedOperationException
+  override def createResource(conf: Object) = throw new UnsupportedOperationException
+  override def deleteResource(conf: Object) = throw new UnsupportedOperationException
+  override def resourceExists(conf: Object) = throw new UnsupportedOperationException
+  override def getModifiedTime(conf: Object) = throw new UnsupportedOperationException
 
-  setScheme(new Scheme[Nothing, Void, PreparedStatement, Nothing, Nothing] {
+  setScheme(new Scheme[Object, Void, PreparedStatement, Object, Object] {
     var batchSize = -1
     var currentBatch = 0
 
-    override def sinkConfInit(flowProcess: FlowProcess[Nothing], tap: Tap[Nothing, Void, PreparedStatement], conf: Nothing) {
+    override def sinkConfInit(flowProcess: FlowProcess[Object], tap: Tap[Object, Void, PreparedStatement], conf: Object) {
       val sqlTap = tap.asInstanceOf[SqlSinkTap]
       batchSize = sqlTap.batchSize
     }
 
-    override def sink(flowProcess: FlowProcess[Nothing], sinkCall: SinkCall[Nothing, PreparedStatement]) = this.synchronized {
+    override def sink(flowProcess: FlowProcess[Object], sinkCall: SinkCall[Object, PreparedStatement]) = this.synchronized {
       try {
-        for (i <- 0 to sinkCall.getOutgoingEntry.size()) {
+        (0 until sinkCall.getOutgoingEntry.size()).foreach { i =>
           sinkCall.getOutput.setObject(i + 1, sinkCall.getOutgoingEntry.getObject(i))
         }
         sinkCall.getOutput.addBatch()
@@ -73,7 +73,7 @@ class SqlSinkTap(val insertQuery: String, val user: String, val pass: String, va
       }
     }
 
-    override def sinkCleanup(flowProcess: FlowProcess[Nothing], sinkCall: SinkCall[Nothing, PreparedStatement]) = this.synchronized {
+    override def sinkCleanup(flowProcess: FlowProcess[Object], sinkCall: SinkCall[Object, PreparedStatement]) = this.synchronized {
       try {
         flushStatement(sinkCall.getOutput)
         sinkCall.getOutput.getConnection.commit()
@@ -95,7 +95,7 @@ class SqlSinkTap(val insertQuery: String, val user: String, val pass: String, va
 
     override def isSink: Boolean = true
 
-    override def sourceConfInit(flowProcess: FlowProcess[Nothing], tap: Tap[Nothing, Void, PreparedStatement], conf: Nothing) = throw new UnsupportedOperationException
-    override def source(flowProcess: FlowProcess[Nothing], sourceCall: SourceCall[Nothing, Void]): Boolean = throw new UnsupportedOperationException
-  }.asInstanceOf[Scheme[Nothing, Void, Nothing, Nothing, Nothing]])
+    override def sourceConfInit(flowProcess: FlowProcess[Object], tap: Tap[Object, Void, PreparedStatement], conf: Object) = throw new UnsupportedOperationException
+    override def source(flowProcess: FlowProcess[Object], sourceCall: SourceCall[Object, Void]): Boolean = throw new UnsupportedOperationException
+  }.asInstanceOf[Scheme[Object, Void, Object, Object, Object]])
 }
