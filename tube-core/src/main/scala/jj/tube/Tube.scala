@@ -10,6 +10,7 @@ import CustomOps._
 import Tube._
 import scala.language.reflectiveCalls
 import cascading.operation.buffer.FirstNBuffer
+import jj.tube.builders.JoinBuilder
 
 /**
  * Companion object creating tube and containing implicit conversions allowing usage of tube requiring pipe and pipe to tube.
@@ -139,8 +140,15 @@ trait GroupOperator {
    * @param joiner type of join (inner/outer etc. { @see cascading.pipe.joiner.Joiner})
    * @return key group X this tube scheme X other tube scheme
    */
+  @deprecated
   def join(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
     this << new CoGroup(this, leftKey, rightCollection, rightKey, joiner)
+
+  /**
+   * @param rightCollection right collection for joining
+   * @return gets the join builder of this tube and the second tube to join it with
+   */
+  def join(rightCollection: Tube) = new JoinBuilder(this, rightCollection)
 
   /**
    * Join this tube with other big tube. Group the results accordingly to join key and apply operation on each join group
@@ -169,8 +177,15 @@ trait GroupOperator {
    * @param joiner type of join (inner/outer etc. { @see cascading.pipe.joiner.Joiner})
    * @return key group X this tube scheme X other tube scheme
    */
+  @deprecated
   def hashJoin(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
     this << new HashJoin(this, leftKey, rightCollection, rightKey, joiner)
+
+  /**
+   * @param rightCollection right collection for joining fitting mapper memory
+   * @return gets the join builder of this tube and the second tube to join it with
+   */
+  def hashJoin(rightCollection: Tube) = new JoinBuilder(this, rightCollection)
 }
 
 trait RowOperator {

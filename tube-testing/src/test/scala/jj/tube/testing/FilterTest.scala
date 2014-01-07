@@ -8,10 +8,9 @@ import jj.tube._
 import cascading.flow.FlowDef
 
 @RunWith(classOf[JUnitRunner])
-class SampleTest extends FunSuite with BaseFlowTest with Matchers{
+class FilterTest extends FunSuite with BaseFlowTest with Matchers{
   test("should filter input longer then 3 signs"){
-    val in = inTap(Array("word"),List(
-      Array("a"),Array("abc"),Array("abcd"),Array("ab")))
+    val in = inTap("word", List("a","abc","abcd","ab"))
     val out = outTap
 
     val inputWords = Tube("words")

@@ -10,13 +10,13 @@ import scala.collection.Set
 import java.util.UUID
 
 object MemTap {
-  def input(data: List[Array[String]], fields: String*) = new MemTap() {
+  def input(data: List[Array[String]], fields: Array[String]) = new MemTap() {
     input = new SingleValueCloseableIterator[Iterator[Tuple]](data.map(new Tuple(_: _*)).iterator) {
       override def close() {}
     }
 
     override def getScheme: Scheme[Nothing, Iterator[Tuple], Nothing, Nothing, Nothing] =
-      new NullScheme[Nothing, Iterator[Tuple], Nothing, Nothing, Nothing](new Fields(fields: _*), Fields.UNKNOWN) {
+      new NullScheme[Nothing, Iterator[Tuple], Nothing, Nothing, Nothing](new Fields(fields.asInstanceOf[Array[Comparable[Any]]]: _*), Fields.UNKNOWN) {
         override def source(flowProcess: FlowProcess[Nothing], sourceCall: SourceCall[Nothing, Iterator[Tuple]]): Boolean = {
           val newDate = sourceCall.getInput.hasNext
           if (newDate) sourceCall.getIncomingEntry.setTuple(sourceCall.getInput.next())
