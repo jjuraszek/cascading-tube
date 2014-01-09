@@ -32,13 +32,17 @@ object BaseFlowTest {
     }
 
     def compute = {
-      flowDef.setDebugLevel(DebugLevel.VERBOSE)
-      new LocalFlowConnector().connect(flowDef).complete()
+      runFromDef(flowDef)
       asserts.foreach{
         case (out, assert) => assert(out.content)
       }
       this
     }
+  }
+
+  def runFromDef(flowDef:FlowDef) = {
+    flowDef.setDebugLevel(DebugLevel.VERBOSE)
+    new LocalFlowConnector().connect(flowDef).complete()
   }
 }
 
@@ -50,11 +54,7 @@ trait BaseFlowTest {
   implicit def tupleScheme(scheme: Product) = BaseFlowTest.tupleToArray(scheme)
   implicit def tupleData(data: List[Product]) = data.map(BaseFlowTest.tupleToArray).toList
 
-  @deprecated("to be remove in ver.4","3.0.0")
-  def runFlow(flowDef: FlowDef) = {
-    flowDef.setDebugLevel(DebugLevel.VERBOSE)
-    new LocalFlowConnector().connect(flowDef).complete()
-  }
+  def runFlow(flowDef: FlowDef) = BaseFlowTest.runFromDef(flowDef)
   def runFlow = new FlowRunner()
 
   @deprecated("to be remove in ver.4","3.0.0")
