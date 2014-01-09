@@ -4,11 +4,23 @@ import cascading.tuple.{TupleEntry, Fields, Tuple}
 import cascading.tap.{SinkMode, Tap}
 import cascading.tap.hadoop.Hfs
 import cascading.scheme.hadoop.TextDelimited
+import cascading.pipe.Pipe
+import jj.tube.builders.OperationBuilder
 
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
  */
-package object tube extends TupleConversions
+package object tube extends TupleConversions{
+  implicit def toPipe(tube: Tube) = tube.pipe
+
+  implicit def toTube(pipe: Pipe) = new Tube(pipe)
+
+  implicit def backToTube(builder: OperationBuilder) = builder.go
+
+  sealed case class Order(dir:Boolean)
+  val DESC = Order(true)
+  val ASC = Order(false)
+}
 
 trait TupleConversions extends FieldsConversions {
   def toTupleEntry(schemeWithValues: Map[String, Any]) =

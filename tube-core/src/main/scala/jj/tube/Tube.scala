@@ -7,10 +7,9 @@ import cascading.tuple.Fields._
 import cascading.operation.{DebugLevel, Insert, Debug}
 import cascading.pipe.assembly._
 import CustomOps._
-import Tube._
 import scala.language.reflectiveCalls
 import cascading.operation.buffer.FirstNBuffer
-import jj.tube.builders.JoinBuilder
+import jj.tube.builders.{GroupingBuilder, JoinBuilder}
 
 /**
  * Companion object creating tube and containing implicit conversions allowing usage of tube requiring pipe and pipe to tube.
@@ -32,13 +31,9 @@ object Tube {
    * @return tube instance
    */
   def apply(name: String, previous: Pipe) = new Tube(new Pipe(name, previous))
-
-  implicit def toPipe(tube: Tube) = tube.pipe
-
-  implicit def toTube(pipe: Pipe) = new Tube(pipe)
 }
 
-class Tube(private var pipe: Pipe) extends GroupOperator with RowOperator with FieldsOperator with MathOperator {
+class Tube(var pipe: Pipe) extends GroupOperator with RowOperator with FieldsOperator with MathOperator {
   /**
    * map of flow intersections allowing to dump intermediate data.
    */
@@ -114,10 +109,13 @@ trait GroupOperator {
    * @param buffer closure operating on group fields and rows from each group
    * @return schema from outScheme
    */
+  @deprecated("to be remove in ver.4","3.0.0")
   def groupBy(key: Fields, sort: Fields = null, reverse: Boolean = false)
              (bufferScheme: Fields = UNKNOWN, input: Fields = ALL, outScheme: Fields = RESULTS)
              (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) =
     this << new GroupBy(this, key, sort, reverse) << new Every(this, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
+
+  def groupBy(key: Fields) = new GroupingBuilder(key, this)
 
   /**
    * Take top n rows from each group
@@ -140,7 +138,7 @@ trait GroupOperator {
    * @param joiner type of join (inner/outer etc. { @see cascading.pipe.joiner.Joiner})
    * @return key group X this tube scheme X other tube scheme
    */
-  @deprecated
+  @deprecated("to be remove in ver.4","3.0.0")
   def join(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
     this << new CoGroup(this, leftKey, rightCollection, rightKey, joiner)
 
@@ -177,7 +175,7 @@ trait GroupOperator {
    * @param joiner type of join (inner/outer etc. { @see cascading.pipe.joiner.Joiner})
    * @return key group X this tube scheme X other tube scheme
    */
-  @deprecated
+  @deprecated("to be remove in ver.4","3.0.0")
   def hashJoin(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin) =
     this << new HashJoin(this, leftKey, rightCollection, rightKey, joiner)
 
@@ -224,7 +222,7 @@ trait RowOperator {
    */
   def replace(input: Fields, funcScheme: Fields = ARGS)
              (function: (Map[String, String] => Map[String, Any])) =
-    if(funcScheme == ARGS) each(input, funcScheme, REPLACE)(function)
+    if (funcScheme == ARGS) each(input, funcScheme, REPLACE)(function)
     else each(input, funcScheme)(function).discard(input)
 
   /**

@@ -5,59 +5,59 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import jj.tube._
-import cascading.flow.FlowDef
+import jj.tube.testing.BaseFlowTest.Source
 
 @RunWith(classOf[JUnitRunner])
 class JoinTest extends FunSuite with BaseFlowTest with Matchers {
   test("join two individual based on id to get the age") {
     //given
-    val tapNames = inTap(("id1", "name"), List(
+    val srcNames = Source(("id1", "name"), List(
       ("2", "dijkstra"),
       ("1", "hawking")))
-    val tapAge = inTap(("id2", "age"), List(
+    val srcAge = Source(("id2", "age"), List(
       ("1", "16"),
       ("2", "17")))
-    val out = outTap
 
     //when
     val inputAges = Tube("ages")
     val inputNames = Tube("names")
     val outputNamesWithAges = Tube("nameWithAges", inputNames)
-      .join(inputAges).on("id1","id2").getting()
+      .join(inputAges).on("id1","id2")
       .retain("name", "age")
 
-    runFlow(FlowDef.flowDef
-      .addSource(inputNames, tapNames)
-      .addSource(inputAges, tapAge)
-      .addTailSink(outputNamesWithAges, out))
-
     //then
-    out.content should contain only("hawking,16", "dijkstra,17")
+    val result = runFlow
+      .withSource(inputNames, srcNames)
+      .withSource(inputAges, srcAge)
+      .withTailSink(outputNamesWithAges)
+      .compute
+
+    result(outputNamesWithAges).content should contain only("hawking,16", "dijkstra,17")
   }
 
   test("hash join two individual based on id to get the age") {
     //given
-    val tapNames = inTap(("id1", "name"), List(
+    val srcNames = Source(("id", "name"), List(
       ("2", "dijkstra"),
       ("1", "hawking")))
-    val tapAge = inTap(("id2", "age"), List(
+    val srcAge = Source(("id", "age"), List(
       ("1", "16"),
       ("2", "17")))
-    val out = outTap
 
     //when
     val inputAges = Tube("ages")
     val inputNames = Tube("names")
     val outputNamesWithAges = Tube("nameWithAges", inputNames)
-      .hashJoin(inputAges).on("id1","id2").getting()
+      .hashJoin(inputAges).on("id","id").withOutputScheme("id1","name","id2","age")
       .retain("name", "age")
 
-    runFlow(FlowDef.flowDef
-      .addSource(inputNames, tapNames)
-      .addSource(inputAges, tapAge)
-      .addTailSink(outputNamesWithAges, out))
+    val result = runFlow
+      .withSource(inputNames, srcNames)
+      .withSource(inputAges, srcAge)
+      .withTailSink(outputNamesWithAges)
+      .compute
 
     //then
-    out.content should contain only("hawking,16", "dijkstra,17")
+    result(outputNamesWithAges).content should contain only("hawking,16", "dijkstra,17")
   }
 }

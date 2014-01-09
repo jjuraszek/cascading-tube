@@ -6,22 +6,23 @@ import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import jj.tube._
 import cascading.flow.FlowDef
+import jj.tube.testing.BaseFlowTest.Source
 
 @RunWith(classOf[JUnitRunner])
 class FilterTest extends FunSuite with BaseFlowTest with Matchers{
   test("should filter input longer then 3 signs"){
-    val in = inTap("word", List("a","abc","abcd","ab"))
-    val out = outTap
+    val in = Source("word", List("a","abc","abcd","ab"))
 
     val inputWords = Tube("words")
-      .filter(){
-        row => row("word").length() > 3
+      .filter() { row =>
+        row("word").length() > 3
       }
 
-    runFlow(FlowDef.flowDef
-      .addSource(inputWords, in)
-      .addTailSink(inputWords, out))
+    val result = runFlow
+      .withSource(inputWords, in)
+      .withTailSink(inputWords)
+      .compute
 
-    out.content should contain only ("a", "abc", "ab")
+    result(inputWords).content should contain only ("a", "abc", "ab")
   }
 }
