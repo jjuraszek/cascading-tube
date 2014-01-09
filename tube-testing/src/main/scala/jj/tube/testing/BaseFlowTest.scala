@@ -12,32 +12,33 @@ object BaseFlowTest {
   private def tupleToArray(product: Product) = product.productIterator.collect[String]{
     case s:String => s
   }.toArray
-
+  
   case class Source(schema: Array[String], data: List[Array[String]])
 
   class FlowRunner {
     val flowDef = FlowDef.flowDef()
-    val outMap = scala.collection.mutable.Map.empty[String,MemTap]
+    val asserts = scala.collection.mutable.Map.empty[MemTap,Set[String] => _]
 
     def withSource(start: Pipe, input:Source) = {
       flowDef.addSource(start, MemTap.input(input.data, input.schema))
       this
     }
 
-    def withTailSink(end:Pipe) = {
+    def withOutput(end:Pipe, assert: (Set[String] => Any) = null) = {
       val out = MemTap.output()
-      outMap.put(end.getName, out)
       flowDef.addTailSink(end, out)
+      if(assert != null)asserts.put(out, assert)
       this
     }
 
     def compute = {
       flowDef.setDebugLevel(DebugLevel.VERBOSE)
       new LocalFlowConnector().connect(flowDef).complete()
+      asserts.foreach{
+        case (out, assert) => assert(out.content)
+      }
       this
     }
-
-    def apply(end:Pipe) = outMap(end.getName)
   }
 }
 

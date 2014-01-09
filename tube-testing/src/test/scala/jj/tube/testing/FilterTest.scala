@@ -11,18 +11,20 @@ import jj.tube.testing.BaseFlowTest.Source
 @RunWith(classOf[JUnitRunner])
 class FilterTest extends FunSuite with BaseFlowTest with Matchers{
   test("should filter input longer then 3 signs"){
+    //given
     val in = Source("word", List("a","abc","abcd","ab"))
 
+    //when
     val inputWords = Tube("words")
       .filter() { row =>
         row("word").length() > 3
       }
 
-    val result = runFlow
+    //then
+    runFlow
       .withSource(inputWords, in)
-      .withTailSink(inputWords)
-      .compute
-
-    result(inputWords).content should contain only ("a", "abc", "ab")
+      .withOutput(inputWords, {
+        _ should contain only ("a", "abc", "ab")
+      }).compute
   }
 }

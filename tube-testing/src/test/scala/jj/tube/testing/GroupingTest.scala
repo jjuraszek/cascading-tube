@@ -22,11 +22,11 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
       .retain("w","c")
 
     //then
-    val result = runFlow
+    runFlow
       .withSource(inputWords, srcWords)
-      .withTailSink(inputWords)
-      .compute
+      .withOutput(inputWords, {
+        _ should contain only("dog,2", "cat,3", "avocado,1")
+      }).compute
 
-    result(inputWords).content should contain only("dog,2", "cat,3", "avocado,1")
   }
 }

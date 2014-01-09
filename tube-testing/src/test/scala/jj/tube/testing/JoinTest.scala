@@ -26,13 +26,13 @@ class JoinTest extends FunSuite with BaseFlowTest with Matchers {
       .retain("name", "age")
 
     //then
-    val result = runFlow
+    runFlow
       .withSource(inputNames, srcNames)
       .withSource(inputAges, srcAge)
-      .withTailSink(outputNamesWithAges)
-      .compute
+      .withOutput(outputNamesWithAges, {
+        _ should contain only("hawking,16", "dijkstra,17")
+      }).compute
 
-    result(outputNamesWithAges).content should contain only("hawking,16", "dijkstra,17")
   }
 
   test("hash join two individual based on id to get the age") {
@@ -51,13 +51,12 @@ class JoinTest extends FunSuite with BaseFlowTest with Matchers {
       .hashJoin(inputAges).on("id","id").withOutputScheme("id1","name","id2","age")
       .retain("name", "age")
 
-    val result = runFlow
+    //then
+    runFlow
       .withSource(inputNames, srcNames)
       .withSource(inputAges, srcAge)
-      .withTailSink(outputNamesWithAges)
-      .compute
-
-    //then
-    result(outputNamesWithAges).content should contain only("hawking,16", "dijkstra,17")
+      .withOutput(outputNamesWithAges, {
+        _ should contain only("hawking,16", "dijkstra,17")
+      }).compute
   }
 }
