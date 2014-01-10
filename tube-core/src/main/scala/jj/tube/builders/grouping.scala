@@ -1,17 +1,14 @@
 package jj.tube.builders
 
-import cascading.pipe.{Every, GroupBy}
+import cascading.pipe.{CoGroup, Every, GroupBy}
 import jj.tube._
 import cascading.tuple.Fields
 import cascading.tuple.Fields._
 import jj.tube.CustomOps._
 import scala.language.reflectiveCalls
 
-class CoGroupingBuilder(leftStream: Tube, rightStream: Tube) extends JoinBuilder(leftStream, rightStream) {
-  override def go = throw new NotImplementedError()
-}
-
-class GroupingBuilder(val keys: Fields, var stream: Tube) extends OperationBuilder {
+trait BufferApply[T] extends OperationBuilder{ this: T =>
+  val baseStream: Tube
   var buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]] = _
   var sort: Fields = null
   var order = ASC
@@ -37,7 +34,7 @@ class GroupingBuilder(val keys: Fields, var stream: Tube) extends OperationBuild
   }
 
   /**
-    * define input of transformation
+   * define input of transformation
    */
   def withInput(fields: Fields) = {
     this.inputFields = fields
@@ -45,7 +42,7 @@ class GroupingBuilder(val keys: Fields, var stream: Tube) extends OperationBuild
   }
 
   /**
-    * declare transformation output
+   * declare transformation output
    */
   def declaring(scheme: Fields) = {
     this.bufferScheme = scheme
@@ -53,14 +50,28 @@ class GroupingBuilder(val keys: Fields, var stream: Tube) extends OperationBuild
   }
 
   /**
-    * declare final output schema for grouping operation
+   * declare final output schema for grouping operation
    */
   def withResult(scheme: Fields) = {
     this.resultScheme = scheme
     this
   }
 
-  def go: Tube =
-    stream << new GroupBy(stream, keys, sort, order.dir) <<
-      new Every(stream, inputFields, asBuffer(buffer).setOutputScheme(bufferScheme), resultScheme)
+  protected def every = new Every(baseStream, inputFields, asBuffer(buffer).setOutputScheme(bufferScheme), resultScheme)
+}
+
+class CoGroupingBuilder(val baseStream: Tube, val rightStream: Tube) extends JoinApply[CoGroupingBuilder] with BufferApply[CoGroupingBuilder] {
+  def go =
+    baseStream <<  new CoGroup(baseStream, leftStreamKey, rightStream, rightStreamKey, outputScheme, joinerImpl) << every
+
+  /**
+   * imply sort of input for each transformation according to fields and direction
+   */
+  override def sorted(sort: Fields, order: Order): CoGroupingBuilder =
+    throw new NotImplementedError("cascading is not supporting sort for coGroup; instead use join and group by")
+}
+
+class GroupingBuilder(val keys: Fields, val baseStream: Tube) extends BufferApply[GroupingBuilder] {
+  def go =
+    baseStream << new GroupBy(baseStream, keys, sort, order.dir) << every
 }

@@ -9,7 +9,7 @@ import cascading.pipe.assembly._
 import CustomOps._
 import scala.language.reflectiveCalls
 import cascading.operation.buffer.FirstNBuffer
-import jj.tube.builders.{GroupingBuilder, JoinBuilder}
+import jj.tube.builders.{CoGroupingBuilder, GroupingBuilder, JoinBuilder}
 
 /**
  * Companion object creating tube and containing implicit conversions allowing usage of tube requiring pipe and pipe to tube.
@@ -161,10 +161,16 @@ trait GroupOperator {
    * @param buffer closure operating on group fields and rows from each group
    * @return schema from outScheme
    */
+  @deprecated("to be remove in ver.4","3.0.0")
   def coGroup(leftKey: Fields, rightCollection: Tube, rightKey: Fields, joiner: Joiner = new InnerJoin)
              (bufferScheme: Fields = UNKNOWN, input: Fields = ALL, outScheme: Fields = RESULTS)
              (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) =
     this << new CoGroup(this, leftKey, rightCollection, rightKey, joiner) << new Every(this, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
+
+  /**
+   * join with other collection and apply operation on each join group
+   */
+  def coGroup(rightCollection:Tube) = new CoGroupingBuilder(this,rightCollection)
 
   /**
    * Join this tube with other tube fit to be in memory.
