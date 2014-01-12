@@ -61,8 +61,8 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
     val inputNumbers = Tube("numbers")
       .coerce[Int]("weightInInt")
       .aggregate("no")
-      .first("weight", DESC)
-      .first("weightInInt", DESC)
+      .first(DESC("weight"))
+      .first(DESC("weightInInt"))
       .go
 
     //then

@@ -30,6 +30,24 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
       }).compute
   }
 
+  test("should group by and sort group with ascending name"){
+    //given
+    val srcWords = Source(("id","w"), List(("1","b"),("1","a"),("1","c")))
+
+    //when
+    val inputWords = Tube("words")
+      .groupBy("id").sorted(ASC("w")).map{ (group, row) =>
+        List(row.next)
+      }.declaring("w").go
+
+    //then
+    runFlow
+      .withSource(inputWords, srcWords)
+      .withOutput(inputWords, {
+      _ should contain only "a"
+    }).compute
+  }
+
   test("list number of childs for each parent with one coGroup operation"){
     //given
     val srcParent = Source(("name","id_parent"), List(("joe","1"),("carol","2")))

@@ -1,28 +1,40 @@
 package jj
 
 import cascading.tuple.{TupleEntry, Fields, Tuple}
-import cascading.tap.{SinkMode, Tap}
-import cascading.tap.hadoop.Hfs
-import cascading.scheme.hadoop.TextDelimited
 import cascading.pipe.Pipe
 import jj.tube.builders.OperationBuilder
+import java.util.Comparator
 
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
  */
-package object tube extends TupleConversions{
+package object tube extends TupleConversions {
   implicit def toPipe(tube: Tube) = tube.pipe
-
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
-
   implicit def backToTube(builder: OperationBuilder) = builder.go
 
-  sealed case class Order(dir:Boolean)
-  val DESC = Order(true)
-  val ASC = Order(false)
+  /**
+   * Define the sort order 
+   * @param reverse
+   */
+  sealed case class Order(sortedFields: Fields, reverse: Boolean) {
+    (0 until sortedFields.size).foreach {
+      sortedFields.setComparator(_, new Comparator[Comparable[Any]] with Serializable {
+        def compare(left: Comparable[Any], right: Comparable[Any]): Int = {
+          if (reverse) right compareTo left
+          else left compareTo right
+        }
+      })
+    }
+
+    val isAscending = !reverse
+  }
+
+  def DESC(sortedFields: Fields) = Order(sortedFields, reverse = true)
+  def ASC(sortedFields: Fields) = Order(sortedFields, reverse = false)
 }
 
-@deprecated("to be remove in ver.4","3.0.0")
+@deprecated("to be remove in ver.4", "3.0.0")
 trait TupleConversions extends FieldsConversions {
   def toTupleEntry(schemeWithValues: Map[String, Any]) =
     schemeWithValues.foldLeft(new TupleEntry(schemeWithValues.keys.toList, Tuple.size(schemeWithValues.size))) {
@@ -46,20 +58,17 @@ trait TupleConversions extends FieldsConversions {
   }
 
   def toTuple(row: List[Any]) = new cascading.tuple.Tuple(row.map(_.asInstanceOf[Object]): _*)
-
   def toList(tuple: Tuple) = (for (i <- 0 to tuple.size) yield tuple.getObject(i).toString).toList
 }
 
 trait FieldsConversions {
   def f(name: String*): Fields = new Fields(name: _*)
 
-  @deprecated("to be remove in ver.4","3.0.0")
+  @deprecated("to be remove in ver.4", "3.0.0")
   implicit def aggregateFields(fields: Seq[Fields]): Fields = fields.reduceLeft[Fields]((f1, f2) => f1.append(f2))
 
   implicit def toField(fields: String): Fields = f(fields)
-
   implicit def toField(fields: List[String]): Fields = new Fields(fields: _*)
-
   implicit def toField(product: Product): Fields = {
     val seq = product.productIterator.collect[String]({
       case f: String => f

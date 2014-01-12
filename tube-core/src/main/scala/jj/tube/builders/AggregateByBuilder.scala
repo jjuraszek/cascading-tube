@@ -22,19 +22,7 @@ class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  Operati
   def max(input:Fields,output:Fields) = {aggregators += new MaxBy(input, output); this}
   def min(input:Fields,output:Fields) = {aggregators += new MinBy(input, output); this}
   def count(output:Fields) = {aggregators += new CountBy(output); this}
-  def first(input:Fields, order: Order) = {
-    (0 until input.size).foreach{
-      input.setComparator(_, new Comparator[Comparable[Any]] with Serializable {
-        def compare(left: Comparable[Any], right: Comparable[Any]): Int = {
-          if(order == ASC) left compareTo right
-          else right compareTo left
-        }
-      }
-      )
-    }
-    aggregators += new FirstBy(input)
-    this
-  }
+  def first(order: Order) = { aggregators += new FirstBy(order.sortedFields); this}
 
   def go =
     baseStream <<  new AggregateBy(baseStream, keys, aggregators: _*)
