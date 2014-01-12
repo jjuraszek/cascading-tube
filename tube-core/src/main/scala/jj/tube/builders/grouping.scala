@@ -10,7 +10,7 @@ import scala.language.reflectiveCalls
 trait BufferApply[T] extends OperationBuilder{ this: T =>
   val baseStream: Tube
   var buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]] = _
-  var order:Order = Order(UNKNOWN, false)
+  var order = Order(UNKNOWN)
   var inputFields = ALL
   var bufferScheme = UNKNOWN
   var resultScheme = RESULTS

@@ -115,6 +115,10 @@ trait GroupOperator {
              (buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) =
     this << new GroupBy(this, key, sort, reverse) << new Every(this, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
 
+  /**
+   * @param key grouping keys
+   * @return init grouping builder
+   */
   def groupBy(key: Fields) = new GroupingBuilder(key, this)
 
   /**
@@ -205,6 +209,10 @@ trait RowOperator {
   @deprecated("to be remove in ver.4","3.0.0")
   def aggregateBy(key: Fields, aggregators: AggregateBy*) = this << new AggregateBy(this, key, aggregators: _*)
 
+  /**
+   * @param key key used as group by aggreagation
+   * @return builder for aggreagtion
+   */
   def aggregate(key: Fields) = new AggregateByBuilder(key, this)
 
   /**

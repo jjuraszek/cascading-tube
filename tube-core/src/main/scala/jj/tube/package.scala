@@ -11,13 +11,14 @@ import java.util.Comparator
 package object tube extends TupleConversions {
   implicit def toPipe(tube: Tube) = tube.pipe
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
+  /** finalize builder by applying it to Tube */
   implicit def backToTube(builder: OperationBuilder) = builder.go
 
   /**
-   * Define the sort order 
+   * Define the sort order for declared fields and apply correct comparator for them
    * @param reverse
    */
-  sealed case class Order(sortedFields: Fields, reverse: Boolean) {
+  sealed case class Order(sortedFields: Fields, reverse: Boolean = false) {
     (0 until sortedFields.size).foreach {
       sortedFields.setComparator(_, new Comparator[Comparable[Any]] with Serializable {
         def compare(left: Comparable[Any], right: Comparable[Any]): Int = {
@@ -30,7 +31,9 @@ package object tube extends TupleConversions {
     val isAscending = !reverse
   }
 
+  /** create desc order for fields*/
   def DESC(sortedFields: Fields) = Order(sortedFields, reverse = true)
+  /** create asc order for fields*/
   def ASC(sortedFields: Fields) = Order(sortedFields, reverse = false)
 }
 
