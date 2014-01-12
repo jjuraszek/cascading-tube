@@ -10,7 +10,7 @@ import scala.language.reflectiveCalls
 trait BufferApply[T] extends OperationBuilder{ this: T =>
   val baseStream: Tube
   var buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]] = _
-  var order = Order(UNKNOWN)
+  var order = SortOrder(UNKNOWN)
   var inputFields = ALL
   var bufferScheme = UNKNOWN
   var resultScheme = RESULTS
@@ -26,7 +26,7 @@ trait BufferApply[T] extends OperationBuilder{ this: T =>
   /**
    * imply sort of input for each transformation according to fields and direction
    */
-  def sorted(order: Order) = {
+  def sorted(order: SortOrder) = {
     this.order = order
     this
   }
@@ -65,7 +65,7 @@ class CoGroupingBuilder(val baseStream: Tube, val rightStream: Tube) extends Joi
   /**
    * imply sort of input for each transformation according to fields and direction
    */
-  override def sorted(order: Order): CoGroupingBuilder =
+  override def sorted(order: SortOrder): CoGroupingBuilder =
     throw new NotImplementedError("cascading is not supporting sort for coGroup; instead use join and group by")
 }
 

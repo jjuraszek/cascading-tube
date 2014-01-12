@@ -18,7 +18,8 @@ package object tube extends TupleConversions {
    * Define the sort order for declared fields and apply correct comparator for them
    * @param reverse
    */
-  sealed case class Order(sortedFields: Fields, reverse: Boolean = false) {
+  //TODO allow custom comparators by order builder
+  sealed case class SortOrder(sortedFields: Fields, reverse: Boolean = false) {
     (0 until sortedFields.size).foreach {
       sortedFields.setComparator(_, new Comparator[Comparable[Any]] with Serializable {
         def compare(left: Comparable[Any], right: Comparable[Any]): Int = {
@@ -32,9 +33,9 @@ package object tube extends TupleConversions {
   }
 
   /** create desc order for fields*/
-  def DESC(sortedFields: Fields) = Order(sortedFields, reverse = true)
+  def DESC(sortedFields: Fields) = SortOrder(sortedFields, reverse = true)
   /** create asc order for fields*/
-  def ASC(sortedFields: Fields) = Order(sortedFields, reverse = false)
+  def ASC(sortedFields: Fields) = SortOrder(sortedFields, reverse = false)
 }
 
 @deprecated("to be remove in ver.4", "3.0.0")
@@ -46,7 +47,7 @@ trait TupleConversions extends FieldsConversions {
           case x: Boolean => te.setBoolean(entry._1, x)
           case x: Int => te.setInteger(entry._1, x)
           case x: Double => te.setDouble(entry._1, x)
-          case x => te.setString(entry._1, if (x != null) x.toString() else "")
+          case x => te.setString(entry._1, if (x != null) x.toString else "")
         }
         te
     }

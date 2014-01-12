@@ -6,7 +6,7 @@ import cascading.flow.FlowProcess
 import scala.collection.convert.WrapAsScala.asScalaIterator
 import cascading.pipe.assembly.{AverageBy, FirstBy, CountBy, SumBy}
 
-@deprecated("will be interanl private util in ver.4","3.0.0")
+@deprecated("will be internal private util in ver.4","3.0.0")
 object CustomOps extends Aggregators {
   import scala.language.existentials
 
