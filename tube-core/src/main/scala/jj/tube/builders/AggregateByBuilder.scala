@@ -11,8 +11,12 @@ import java.util.Comparator
 
 //TODO add policy what to do with nulls
 class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  OperationBuilder{
-  val aggregators = scala.collection.mutable.ListBuffer.empty[AggregateBy]
 
+  val aggregators = scala.collection.mutable.ListBuffer.empty[AggregateBy]
+  var threshold:Option[Int] = None
+
+  /** allow in memory aggreagation up to threshold */
+  def withThreshold(threshold: Int) = {this.threshold = Some(threshold); this}
   /**
    * create average stat for aggreagation
    * @param input fields with numeric values
@@ -59,5 +63,7 @@ class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  Operati
   def first(order: SortOrder) = { aggregators += new FirstBy(order.sortedFields); this}
 
   def go =
-    baseStream <<  new AggregateBy(baseStream, keys, aggregators: _*)
+    baseStream << threshold
+      .map{case th:Int => new AggregateBy(baseStream, keys, th, aggregators: _*)}
+      .getOrElse( new AggregateBy(baseStream, keys, aggregators: _*))
 }

@@ -19,7 +19,7 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
 
     //when
     val inputNumbers = Tube("numbers")
-      .aggregate("no")
+      .aggregate("no").withThreshold(10)
         .avg("num","avg")
         .sum[Int]("num","sum")
         .max("num","max")
