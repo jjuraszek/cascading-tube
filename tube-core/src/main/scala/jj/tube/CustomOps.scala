@@ -6,6 +6,7 @@ import cascading.flow.FlowProcess
 import scala.collection.convert.WrapAsScala.asScalaIterator
 import cascading.pipe.assembly.{AverageBy, FirstBy, CountBy, SumBy}
 
+@deprecated("will be interanl private util in ver.4","3.0.0")
 object CustomOps extends Aggregators {
   import scala.language.existentials
 
@@ -47,6 +48,7 @@ object CustomOps extends Aggregators {
     }
 }
 
+@deprecated("to be remove in ver.4","3.0.0")
 trait Aggregators {
   /**
    * Sum values from {@code field} resulting in type {@code resultType}. Must be part of Tube.aggregateBy call.

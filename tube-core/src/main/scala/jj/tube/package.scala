@@ -22,6 +22,7 @@ package object tube extends TupleConversions{
   val ASC = Order(false)
 }
 
+@deprecated("to be remove in ver.4","3.0.0")
 trait TupleConversions extends FieldsConversions {
   def toTupleEntry(schemeWithValues: Map[String, Any]) =
     schemeWithValues.foldLeft(new TupleEntry(schemeWithValues.keys.toList, Tuple.size(schemeWithValues.size))) {
@@ -52,6 +53,7 @@ trait TupleConversions extends FieldsConversions {
 trait FieldsConversions {
   def f(name: String*): Fields = new Fields(name: _*)
 
+  @deprecated("to be remove in ver.4","3.0.0")
   implicit def aggregateFields(fields: Seq[Fields]): Fields = fields.reduceLeft[Fields]((f1, f2) => f1.append(f2))
 
   implicit def toField(fields: String): Fields = f(fields)
