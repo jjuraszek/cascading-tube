@@ -9,7 +9,7 @@ import cascading.pipe.assembly._
 import CustomOps._
 import scala.language.reflectiveCalls
 import cascading.operation.buffer.FirstNBuffer
-import jj.tube.builders.{CoGroupingBuilder, GroupingBuilder, JoinBuilder}
+import jj.tube.builders.{AggregateByBuilder, CoGroupingBuilder, GroupingBuilder, JoinBuilder}
 
 /**
  * Companion object creating tube and containing implicit conversions allowing usage of tube requiring pipe and pipe to tube.
@@ -202,8 +202,10 @@ trait RowOperator {
    * @param aggregators accumulators
    * @return transformed tube with scheme containing group and effect of accumulation
    */
-  //TODO transform to builder pattern
+  @deprecated("to be remove in ver.4","3.0.0")
   def aggregateBy(key: Fields, aggregators: AggregateBy*) = this << new AggregateBy(this, key, aggregators: _*)
+
+  def aggregate(key: Fields) = new AggregateByBuilder(key, this)
 
   /**
    * Transformation allowing to run closure against each row
@@ -282,7 +284,10 @@ trait FieldsOperator {
    * @param klass type of destination class
    * @return same as input fields. Only values may be altered (ie. Double -> Integer)
    */
+  @deprecated("to be remove in ver.4","3.0.0")
   def coerce(fields: Fields, klass: Class[_]) = this << new Coerce(this, fields, (1 to fields.size).map(_ => klass): _*)
+
+  def coerce[T](fields:Fields)(implicit m: Manifest[T]) = this << new Coerce(this, fields, (1 to fields.size).map(_ => m.runtimeClass): _*)
 
   /**
    * Append some constances to tube
