@@ -36,6 +36,8 @@ package object tube extends TupleConversions {
   def DESC(sortedFields: Fields) = SortOrder(sortedFields, reverse = true)
   /** create asc order for fields*/
   def ASC(sortedFields: Fields) = SortOrder(sortedFields, reverse = false)
+
+  /**allow easy operations on TupleEntry without allocation **/
 }
 
 @deprecated("to be remove in ver.4", "3.0.0")

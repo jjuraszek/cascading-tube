@@ -1,13 +1,9 @@
 package jj.tube.builders
 
-import cascading.pipe.{CoGroup, Every, GroupBy}
 import jj.tube._
 import cascading.tuple.Fields
-import cascading.tuple.Fields._
-import jj.tube.CustomOps._
-import scala.language.reflectiveCalls
+import scala.language.{reflectiveCalls,existentials}
 import cascading.pipe.assembly._
-import java.util.Comparator
 
 //TODO add policy what to do with nulls
 class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  OperationBuilder{

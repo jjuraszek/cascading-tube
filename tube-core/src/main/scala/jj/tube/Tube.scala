@@ -2,7 +2,7 @@ package jj.tube
 
 import cascading.pipe._
 import cascading.pipe.joiner.{Joiner, InnerJoin}
-import cascading.tuple.Fields
+import cascading.tuple.{TupleEntry, Fields}
 import cascading.tuple.Fields._
 import cascading.operation.{DebugLevel, Insert, Debug}
 import cascading.pipe.assembly._
@@ -74,10 +74,10 @@ class Tube(var pipe: Pipe) extends GroupOperator with RowOperator with FieldsOpe
    */
   def split(input: Fields = ALL)(filter: Map[String, String] => Boolean) = {
     val positiveTube = Tube("positive_" + pipe.getName, this.pipe)
-    positiveTube.filter(input)(!filter(_))
+    positiveTube.filterNot(input)(!filter(_))
 
     val negativeTube = Tube("negative_" + pipe.getName, this.pipe)
-    negativeTube.filter(input)(filter)
+    negativeTube.filterNot(input)(filter)
     (positiveTube, negativeTube)
   }
 
@@ -248,7 +248,9 @@ trait RowOperator {
    * @param filter closure predicate. If true rule out the row
    * @return fields are not altered. Only row count is different
    */
-  def filter(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(this, input, asFilter(filter))
+  def filterNot(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(this, input, asFilter(filter))
+
+  def filter(input:Fields = ALL)(filter: TupleEntry => Boolean) = this << new Each(this, input, asFilter(filter))
 
   /**
    * Delete duplicates from this tube
