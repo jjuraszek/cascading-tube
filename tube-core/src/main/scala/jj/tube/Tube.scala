@@ -116,10 +116,9 @@ trait GroupOperator {
     this << new GroupBy(this, key, sort, reverse) << new Every(this, input, asBuffer(buffer).setOutputScheme(bufferScheme), outScheme)
 
   /**
-   * @param key grouping keys
    * @return init grouping builder
    */
-  def groupBy(key: Fields) = new GroupingBuilder(key, this)
+  def groupBy(keyGroup: Fields) = new GroupingBuilder(key, this)
 
   /**
    * Take top n rows from each group
