@@ -118,7 +118,7 @@ trait GroupOperator {
   /**
    * @return init grouping builder
    */
-  def groupBy(keyGroup: Fields) = new GroupingBuilder(key, this)
+  def groupBy(keyGroup: Fields) = new GroupingBuilder(keyGroup, this)
 
   /**
    * Take top n rows from each group
