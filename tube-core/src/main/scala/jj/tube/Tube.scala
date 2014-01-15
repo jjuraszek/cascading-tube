@@ -74,7 +74,7 @@ class Tube(var pipe: Pipe) extends GroupOperator with RowOperator with FieldsOpe
    */
   def split(input: Fields = ALL)(filter: Map[String, String] => Boolean) = {
     val positiveTube = Tube("positive_" + pipe.getName, this.pipe)
-    positiveTube.filterNot(input)(!filter(_))
+    positiveTube.filter(input)(filter)
 
     val negativeTube = Tube("negative_" + pipe.getName, this.pipe)
     negativeTube.filterNot(input)(filter)
@@ -250,7 +250,7 @@ trait RowOperator {
    */
   def filterNot(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(this, input, asFilter(filter))
 
-  def filter(input:Fields = ALL)(filter: TupleEntry => Boolean) = this << new Each(this, input, asFilter(filter))
+  def filter(input:Fields = ALL)(filter: Map[String, String] => Boolean) = this.filterNot(input)(!filter(_))
 
   /**
    * Delete duplicates from this tube
