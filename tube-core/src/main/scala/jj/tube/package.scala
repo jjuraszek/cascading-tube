@@ -38,6 +38,25 @@ package object tube extends TupleConversions {
   def ASC(sortedFields: Fields) = SortOrder(sortedFields, reverse = false)
 
   /**allow easy operations on TupleEntry without allocation **/
+  implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
+    def apply[T](alias:String):T = tupleEntry.getObject(alias).asInstanceOf[T]
+    def apply[T](position:Int):T = tupleEntry.getObject(position).asInstanceOf[T]
+  }
+
+  implicit def toRichTupleEntryList(schemeWithValues: Map[String, Any]):List[RichTupleEntry] =
+    List(toRichTupleEntry(schemeWithValues))
+
+  implicit def toRichTupleEntry(schemeWithValues: Map[String, Any]):RichTupleEntry =
+    schemeWithValues.foldLeft(new TupleEntry(schemeWithValues.keys.toList, Tuple.size(schemeWithValues.size))) {
+      (te, entry) =>
+        entry._2 match {
+          case x: Boolean => te.setBoolean(entry._1, x)
+          case x: Int => te.setInteger(entry._1, x)
+          case x: Double => te.setDouble(entry._1, x)
+          case x => te.setString(entry._1, if (x != null) x.toString else "")
+        }
+        te
+    }
 }
 
 @deprecated("to be remove in ver.4", "3.0.0")

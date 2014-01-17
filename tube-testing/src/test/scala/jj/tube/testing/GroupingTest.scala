@@ -6,7 +6,6 @@ import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import jj.tube._
 import jj.tube.testing.BaseFlowTest.Source
-import jj.tube.builders.CoGroupingBuilder
 
 @RunWith(classOf[JUnitRunner])
 class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
@@ -18,7 +17,7 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
     val inputWords = Tube("words")
       .groupBy("w").map{ (group, row) =>
         val count = row.count(_ => true)
-        List(Map("w" -> group.head._2, "c" -> count))
+        Map("w" -> group("w"), "c" -> count)
       }.declaring("w","c")
       .retain("w","c")
 
@@ -37,7 +36,7 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
     //when
     val inputWords = Tube("words")
       .groupBy("id").sorted(ASC("w")).map{ (group, row) =>
-        List(row.next)
+        List(row.next())
       }.declaring("w").go
 
     //then

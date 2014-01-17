@@ -1,6 +1,6 @@
 package jj.tube.builders
 
-import jj.tube.Tube
+import jj.tube._
 
 /**
  * marking trait allowing implicit method transformation from builder to Tube

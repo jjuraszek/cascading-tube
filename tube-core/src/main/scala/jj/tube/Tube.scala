@@ -9,7 +9,7 @@ import cascading.pipe.assembly._
 import CustomOps._
 import scala.language.reflectiveCalls
 import cascading.operation.buffer.FirstNBuffer
-import jj.tube.builders.{AggregateByBuilder, CoGroupingBuilder, GroupingBuilder, JoinBuilder}
+import jj.tube.builders._
 
 /**
  * Companion object creating tube and containing implicit conversions allowing usage of tube requiring pipe and pipe to tube.
@@ -247,9 +247,25 @@ trait RowOperator {
    * @param filter closure predicate. If true rule out the row
    * @return fields are not altered. Only row count is different
    */
+  @deprecated("to be remove in ver.4","3.0.0")
   def filterNot(input: Fields = ALL)(filter: Map[String, String] => Boolean) = this << new Each(this, input, asFilter(filter))
 
+  @deprecated("to be remove in ver.4","3.0.0")
   def filter(input:Fields = ALL)(filter: Map[String, String] => Boolean) = this.filterNot(input)(!filter(_))
+
+  /**
+   * Filtering this tube according to defined closure
+   *
+   * @param filter closure predicate. If true rule out the row
+   * @return fields are not altered. Only row count is different
+   */
+  def filter(filter:RichTupleEntry => Boolean) = new FilterBuilder({!filter(_)}, this)
+
+  /**
+   *
+   * @see filter working as opposite filter
+   */
+  def filterNot(filter:RichTupleEntry => Boolean) = new FilterBuilder(filter, this)
 
   /**
    * Delete duplicates from this tube

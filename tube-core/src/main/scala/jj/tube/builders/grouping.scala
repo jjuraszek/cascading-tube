@@ -4,12 +4,14 @@ import cascading.pipe.{CoGroup, Every, GroupBy}
 import jj.tube._
 import cascading.tuple.Fields
 import cascading.tuple.Fields._
-import jj.tube.CustomOps._
 import scala.language.reflectiveCalls
+import cascading.operation.{BufferCall, Buffer, BaseOperation}
+import cascading.flow.FlowProcess
+import scala.collection.convert.WrapAsScala.asScalaIterator
 
 trait BufferApply[T] extends OperationBuilder{ this: T =>
   val baseStream: Tube
-  var buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]] = _
+  var buffer: (RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry] = _
   var order = SortOrder(UNKNOWN)
   var inputFields = ALL
   var bufferScheme = UNKNOWN
@@ -18,7 +20,7 @@ trait BufferApply[T] extends OperationBuilder{ this: T =>
   /**
    * pass transformation function
    */
-  def map(buffer: (Map[String, String], Iterator[Map[String, String]]) => List[Map[String, Any]]) = {
+  def map(buffer: (RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]) = {
     this.buffer = buffer
     this
   }
@@ -56,6 +58,21 @@ trait BufferApply[T] extends OperationBuilder{ this: T =>
   }
 
   protected def every = new Every(baseStream, inputFields, asBuffer(buffer).setOutputScheme(bufferScheme), resultScheme)
+
+  def asBuffer(transform: (RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]) =
+    new BaseOperation[Any] with Buffer[Any] {
+      override def operate(flowProcess: FlowProcess[_], bufferCall: BufferCall[Any]) {
+        val lazyIterator = bufferCall.getArgumentsIterator.map(new RichTupleEntry(_))
+        transform(bufferCall.getGroup, lazyIterator)
+          .map(_.tupleEntry)
+          .foreach(bufferCall.getOutputCollector.add)
+      }
+
+      def setOutputScheme(field: Fields) = {
+        fieldDeclaration = field
+        this
+      }
+    }
 }
 
 class CoGroupingBuilder(val baseStream: Tube, val rightStream: Tube) extends JoinApply[CoGroupingBuilder] with BufferApply[CoGroupingBuilder] {
