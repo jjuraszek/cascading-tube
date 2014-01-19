@@ -58,7 +58,9 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
     val ageOfOldestChildPerParent = Tube("ageOfOldestChildPerParent",inputChildren)
       .coGroup(inputParents).on("parent","id_parent").map { (group, row) =>
         val firstChild = row.next()
-        List(Map("name" -> firstChild("name"),"no"->(1 +row.count( _ => true))))
+        List(
+          Map("name" -> firstChild("name"),"no"->(1 +row.count( _ => true)))
+        )
       }.declaring("name","no")
       .go
 

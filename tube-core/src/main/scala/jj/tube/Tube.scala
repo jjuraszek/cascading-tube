@@ -229,6 +229,8 @@ trait RowOperator {
           (function: (Map[String, String] => Map[String, Any])) =
     this << new Each(this, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
 
+  def flatMap(input: Fields = ALL) = new EachBuilder(input, this)
+
   /**
    * Allow replace fields in input row
    * @param input fields to replace

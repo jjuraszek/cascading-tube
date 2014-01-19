@@ -3,9 +3,7 @@ package jj.tube.builders
 import jj.tube._
 import cascading.tuple.Fields
 import scala.language.{reflectiveCalls,existentials}
-import cascading.pipe.assembly._
 import cascading.pipe.Each
-import jj.tube.CustomOps._
 import jj.tube.RichTupleEntry
 import cascading.operation.{FilterCall, BaseOperation, Filter}
 import cascading.flow.FlowProcess

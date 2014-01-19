@@ -41,9 +41,16 @@ package object tube extends TupleConversions {
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
     def apply[T](alias:String):T = tupleEntry.getObject(alias).asInstanceOf[T]
     def apply[T](position:Int):T = tupleEntry.getObject(position).asInstanceOf[T]
+
+    def toMap = (0 until tupleEntry.getFields.size).map{ i =>
+      tupleEntry.getFields.get(i).toString -> Option(tupleEntry.getObject(i)).getOrElse("").toString
+    }.toMap
   }
 
-  implicit def toRichTupleEntryList(schemeWithValues: Map[String, Any]):List[RichTupleEntry] =
+  implicit def toRichTupleEntryList(schemeWithValues: List[Map[String, String]]) =
+    schemeWithValues.map(toRichTupleEntry)
+
+  implicit def toRichTupleEntryList(schemeWithValues: Map[String, Any]) =
     List(toRichTupleEntry(schemeWithValues))
 
   implicit def toRichTupleEntry(schemeWithValues: Map[String, Any]):RichTupleEntry =
