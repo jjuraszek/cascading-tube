@@ -28,21 +28,7 @@ Writing MR hadoop jobs in tube is going to be more functional but in the other h
 Despite of that **cascading-tube.testing** will be constantly extended to show the capability of tube.
 
 ## Sample use case ##
-
-import jj.tube._
-import jj.tube.CustomOps._
-import jj.tube.Tube._
-
-```
-val popularFilms = Tube("allFilms")
-  .filter("country"){ 
-    //filter out box office results from usa
-    _ == "usa"
-  }
-  .aggregateBy("title",sumInt("views"), sum("income"))
-```
-
-Now you can use that tube as you use cascading Pipe. Most basic operators you can find in javadoc. Look for content of ```jj.tube._``` package.
+**SEE the tube-testing for examples**
 
 ## Design insight ##
 * ```package object tube``` provide functions of implicit conversions over ```cascading.tuple.{TupleEntry, Fields, Tuple}```
