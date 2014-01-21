@@ -15,7 +15,7 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
 
     //when
     val inputWords = Tube("words")
-      .groupBy("w").map{ (group, row) =>
+      .groupBy("w"){ (group, row) =>
         val count = row.count(_ => true)
         Map("w" -> group("w"), "c" -> count)
       }.declaring("w","c")
@@ -35,7 +35,7 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
 
     //when
     val inputWords = Tube("words")
-      .groupBy("id").sorted(ASC("w")).map{ (group, row) =>
+      .groupBy("id").sorted(ASC("w")){ (group, row) =>
         List(row.next())
       }.declaring("w").go
 
@@ -50,13 +50,13 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
   test("list number of childs for each parent with one coGroup operation"){
     //given
     val srcParent = Source(("name","id_parent"), List(("joe","1"),("carol","2")))
-    val srcChildren = Source("parent", List("1","1","1","2","2"))
+    val srcChildren = Source("id_parent", List("1","1","1","2","2"))
 
     //when
     val inputParents = Tube("parents")
     val inputChildren = Tube("children")
     val ageOfOldestChildPerParent = Tube("ageOfOldestChildPerParent",inputChildren)
-      .coGroup(inputParents).on("parent","id_parent").map { (group, row) =>
+      .coGroup(inputParents).on("id_parent","id_parent").withJoinFields("parent","name","id") { (group, row) =>
         val firstChild = row.next()
         List(
           Map("name" -> firstChild("name"),"no"->(1 +row.count( _ => true)))

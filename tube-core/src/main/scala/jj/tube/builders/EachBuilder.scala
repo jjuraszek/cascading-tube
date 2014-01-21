@@ -8,12 +8,15 @@ import cascading.operation.{FunctionCall, BaseOperation, Function}
 import cascading.flow.FlowProcess
 import scala.language.{reflectiveCalls,existentials}
 
-trait Mapper[T] extends OperationBuilder{ this: T =>
-  var funcScheme = UNKNOWN
-  var outScheme = ALL
-  var function:RichTupleEntry => List[RichTupleEntry] = null
+class EachBuilder(val baseStream: Tube) extends OperationBuilder
+  with WithCustomOperation[EachBuilder,RichTupleEntry => List[RichTupleEntry]]
+  with WithOperationResult[EachBuilder]{
 
-  def apply(function: RichTupleEntry => List[RichTupleEntry]) = {this.function = function; this}
+  declaring(UNKNOWN)
+  withInput(ALL)
+
+  def go =
+    baseStream << new Each(baseStream, input, asFunction(operation).setOutputScheme(operationScheme), resultScheme)
 
   def asFunction(transform: (RichTupleEntry => List[RichTupleEntry])) =
     new BaseOperation[Any] with Function[Any] {
@@ -28,25 +31,4 @@ trait Mapper[T] extends OperationBuilder{ this: T =>
         this
       }
     }
-
-  /**
-   * declare transformation output
-   */
-  def declaring(scheme: Fields) = {
-    this.funcScheme = scheme
-    this
-  }
-
-  /**
-   * declare final output schema for grouping operation
-   */
-  def withResult(scheme: Fields) = {
-    this.outScheme = scheme
-    this
-  }
-}
-
-class EachBuilder(val input:Fields, val baseStream: Tube) extends Mapper[EachBuilder]{
-  def go =
-    baseStream << new Each(baseStream, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
 }

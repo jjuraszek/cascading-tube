@@ -118,7 +118,7 @@ trait GroupOperator {
   /**
    * @return init grouping builder
    */
-  def groupBy(keyGroup: Fields) = new GroupingBuilder(keyGroup, this)
+  def groupBy(keyGroup: Fields) = new GroupingBuilder(this).on(keyGroup)
 
   /**
    * Take top n rows from each group
@@ -192,7 +192,7 @@ trait GroupOperator {
    * @param rightCollection right collection for joining fitting mapper memory
    * @return gets the join builder of this tube and the second tube to join it with
    */
-  def hashJoin(rightCollection: Tube) = new JoinBuilder(this, rightCollection)
+  def hashJoin(rightCollection: Tube) = new HashJoinBuilder(this, rightCollection)
 }
 
 trait RowOperator {
@@ -229,7 +229,7 @@ trait RowOperator {
           (function: (Map[String, String] => Map[String, Any])) =
     this << new Each(this, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
 
-  def flatMap(input: Fields = ALL) = new EachBuilder(input, this)
+  def flatMap(input: Fields = ALL) = new EachBuilder(this).withInput(input)
 
   /**
    * Allow replace fields in input row
@@ -261,13 +261,13 @@ trait RowOperator {
    * @param filter closure predicate. If true rule out the row
    * @return fields are not altered. Only row count is different
    */
-  def filter(filter:RichTupleEntry => Boolean) = new FilterBuilder({!filter(_)}, this)
+  def filter(filter:RichTupleEntry => Boolean) = new FilterBuilder(this)(!filter(_))
 
   /**
    *
    * @see filter working as opposite filter
    */
-  def filterNot(filter:RichTupleEntry => Boolean) = new FilterBuilder(filter, this)
+  def filterNot(filter:RichTupleEntry => Boolean) = new FilterBuilder(this)(filter)
 
   /**
    * Delete duplicates from this tube

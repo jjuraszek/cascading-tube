@@ -48,7 +48,7 @@ class JoinTest extends FunSuite with BaseFlowTest with Matchers {
     val inputAges = Tube("ages")
     val inputNames = Tube("names")
     val outputNamesWithAges = Tube("nameWithAges", inputNames)
-      .hashJoin(inputAges).on("id","id").withOutputScheme("id1","name","id2","age")
+      .hashJoin(inputAges).on("id","id").declaring("id1","name","id2","age")
       .retain("name", "age")
 
     //then

@@ -4,60 +4,21 @@ import cascading.pipe.{CoGroup, Every, GroupBy}
 import jj.tube._
 import cascading.tuple.Fields
 import cascading.tuple.Fields._
-import scala.language.reflectiveCalls
+import scala.language.{reflectiveCalls,existentials}
 import cascading.operation.{BufferCall, Buffer, BaseOperation}
 import cascading.flow.FlowProcess
 import scala.collection.convert.WrapAsScala.asScalaIterator
+import jj.tube.SortOrder
+import jj.tube.RichTupleEntry
 
-trait BufferApply[T] extends OperationBuilder{ this: T =>
-  val baseStream: Tube
-  var buffer: (RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry] = _
-  var order = SortOrder(UNKNOWN)
-  var inputFields = ALL
-  var bufferScheme = UNKNOWN
-  var resultScheme = RESULTS
+trait BaseGroupingBuilder extends OperationBuilder{
+  val baseStream:Tube
+  var input:Fields
+  var operation: (RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]
+  var operationScheme:Fields
+  var resultScheme:Fields
 
-  /**
-   * pass transformation function
-   */
-  def map(buffer: (RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]) = {
-    this.buffer = buffer
-    this
-  }
-
-  /**
-   * imply sort of input for each transformation according to fields and direction
-   */
-  def sorted(order: SortOrder) = {
-    this.order = order
-    this
-  }
-
-  /**
-   * define input of transformation
-   */
-  def withInput(fields: Fields) = {
-    this.inputFields = fields
-    this
-  }
-
-  /**
-   * declare transformation output
-   */
-  def declaring(scheme: Fields) = {
-    this.bufferScheme = scheme
-    this
-  }
-
-  /**
-   * declare final output schema for grouping operation
-   */
-  def withResult(scheme: Fields) = {
-    this.resultScheme = scheme
-    this
-  }
-
-  protected def every = new Every(baseStream, inputFields, asBuffer(buffer).setOutputScheme(bufferScheme), resultScheme)
+  def every = new Every(baseStream, input, asBuffer(operation).setOutputScheme(operationScheme), resultScheme)
 
   def asBuffer(transform: (RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]) =
     new BaseOperation[Any] with Buffer[Any] {
@@ -75,18 +36,52 @@ trait BufferApply[T] extends OperationBuilder{ this: T =>
     }
 }
 
-class CoGroupingBuilder(val baseStream: Tube, val rightStream: Tube) extends JoinApply[CoGroupingBuilder] with BufferApply[CoGroupingBuilder] {
-  def go =
-    baseStream <<  new CoGroup(baseStream, leftStreamKey, rightStream, rightStreamKey, outputScheme, joinerImpl) << every
+class GroupingBuilder(val baseStream: Tube) extends BaseGroupingBuilder
+  with WithCustomOperation[GroupingBuilder,(RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]]
+  with WithOperationResult[GroupingBuilder]{
+
+  withInput(ALL)
+  declaring(UNKNOWN)
+  withResult(RESULTS)
+
+  var order = SortOrder(UNKNOWN)
+  var keys:Fields = null
+
+  def on(keys:Fields) = {this.keys = keys; this}
 
   /**
    * imply sort of input for each transformation according to fields and direction
    */
-  override def sorted(order: SortOrder): CoGroupingBuilder =
-    throw new NotImplementedError("cascading is not supporting sort for coGroup; instead use join and group by")
-}
+  def sorted(order: SortOrder) = {
+    this.order = order
+    this
+  }
 
-class GroupingBuilder(val keys: Fields, val baseStream: Tube) extends BufferApply[GroupingBuilder] {
   def go =
     baseStream << new GroupBy(baseStream, keys, order.sortedFields, order.reverse) << every
+}
+
+class CoGroupingBuilder(val baseStream: Tube, val rightStream: Tube) extends BaseGroupingBuilder
+  with JoinApply[CoGroupingBuilder]
+  with WithCustomOperation[CoGroupingBuilder,(RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]]
+  with WithOperationResult[CoGroupingBuilder]{
+
+  var joinFields:Fields = null
+
+  def withJoinFields(alter:Fields) = { this.joinFields = alter; this}
+
+  withInput(ALL)
+  declaring(UNKNOWN)
+  withResult(RESULTS)
+
+  override def on(keys:Fields) = {
+    leftStreamKey = keys
+    rightStreamKey = keys
+    this
+  }
+
+  override def go =
+    baseStream << {
+      new CoGroup(baseStream, leftStreamKey, rightStream, rightStreamKey, joinFields, joinerImpl)
+    } << every
 }

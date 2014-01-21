@@ -1,19 +1,19 @@
 package jj.tube.builders
 
 import jj.tube._
-import cascading.tuple.Fields
 import scala.language.{reflectiveCalls,existentials}
 import cascading.pipe.Each
 import jj.tube.RichTupleEntry
 import cascading.operation.{FilterCall, BaseOperation, Filter}
 import cascading.flow.FlowProcess
+import cascading.tuple.Fields
 
-class FilterBuilder(val filter:RichTupleEntry => Boolean, val baseStream: Tube) extends  OperationBuilder{
-  var input = Fields.ALL
-  def withInput(input:Fields) = {this.input = input; this}
+class FilterBuilder(val baseStream: Tube) extends  OperationBuilder
+  with WithCustomOperation[FilterBuilder,RichTupleEntry => Boolean]{
+  withInput(Fields.ALL)
 
   def go =
-    baseStream << new Each(baseStream, input, asFilter(filter))
+    baseStream << new Each(baseStream, input, asFilter(operation))
 
   def asFilter(isRemovable: (RichTupleEntry => Boolean)): Filter[Any] =
     new BaseOperation[Any] with Filter[Any] {
