@@ -20,7 +20,9 @@ class EachTest extends FunSuite with BaseFlowTest with Matchers {
       .flatMap(Fields.ALL){ row =>
         val count = row[Int]("num")
         val c = row[String]("c")
-        (1 to count).map { idx =>Map("w"->s"$c$idx")}.toList
+        (1 to count).map {
+          idx => Map("w"->s"$c$idx")
+        }.toList
       }.declaring("w")
       .withResult(Fields.RESULTS)
       .go

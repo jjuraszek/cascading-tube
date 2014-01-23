@@ -47,13 +47,13 @@ package object tube extends TupleConversions {
     }.toMap
   }
 
-  implicit def toRichTupleEntryList(schemeWithValues: List[Map[String, String]]) =
-    schemeWithValues.map(toRichTupleEntry)
+  implicit def toTupleEntryList(schemeWithValues: List[Map[String, String]]) =
+    schemeWithValues.map(toTupleEntry)
 
-  implicit def toRichTupleEntryList(schemeWithValues: Map[String, Any]) =
-    List(toRichTupleEntry(schemeWithValues))
+  implicit def toTupleEntryList(schemeWithValues: Map[String, Any]) =
+    List(toTupleEntry(schemeWithValues))
 
-  implicit def toRichTupleEntry(schemeWithValues: Map[String, Any]):RichTupleEntry =
+  implicit def toTupleEntry(schemeWithValues: Map[String, Any]):TupleEntry =
     schemeWithValues.foldLeft(new TupleEntry(schemeWithValues.keys.toList, Tuple.size(schemeWithValues.size))) {
       (te, entry) =>
         entry._2 match {
@@ -68,18 +68,6 @@ package object tube extends TupleConversions {
 
 @deprecated("to be remove in ver.4", "3.0.0")
 trait TupleConversions extends FieldsConversions {
-  def toTupleEntry(schemeWithValues: Map[String, Any]) =
-    schemeWithValues.foldLeft(new TupleEntry(schemeWithValues.keys.toList, Tuple.size(schemeWithValues.size))) {
-      (te, entry) =>
-        entry._2 match {
-          case x: Boolean => te.setBoolean(entry._1, x)
-          case x: Int => te.setInteger(entry._1, x)
-          case x: Double => te.setDouble(entry._1, x)
-          case x => te.setString(entry._1, if (x != null) x.toString else "")
-        }
-        te
-    }
-
   def toMap(tupleEntry: TupleEntry) = {
     val fieldWithVal = for {
       i <- 0 until tupleEntry.getFields.size

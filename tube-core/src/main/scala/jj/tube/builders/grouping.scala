@@ -2,7 +2,7 @@ package jj.tube.builders
 
 import cascading.pipe.{CoGroup, Every, GroupBy}
 import jj.tube._
-import cascading.tuple.Fields
+import cascading.tuple.{TupleEntry, Fields}
 import cascading.tuple.Fields._
 import scala.language.{reflectiveCalls,existentials}
 import cascading.operation.{BufferCall, Buffer, BaseOperation}
@@ -14,13 +14,13 @@ import jj.tube.RichTupleEntry
 trait BaseGroupingBuilder extends OperationBuilder{
   val baseStream:Tube
   var input:Fields
-  var operation: (RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]
+  var operation: (RichTupleEntry, Iterator[RichTupleEntry]) => List[TupleEntry]
   var operationScheme:Fields
   var resultScheme:Fields
 
   def every = new Every(baseStream, input, asBuffer(operation).setOutputScheme(operationScheme), resultScheme)
 
-  def asBuffer(transform: (RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]) =
+  def asBuffer(transform: (RichTupleEntry, Iterator[RichTupleEntry]) => List[TupleEntry]) =
     new BaseOperation[Any] with Buffer[Any] {
       override def operate(flowProcess: FlowProcess[_], bufferCall: BufferCall[Any]) {
         val lazyIterator = bufferCall.getArgumentsIterator.map(new RichTupleEntry(_))
@@ -37,7 +37,7 @@ trait BaseGroupingBuilder extends OperationBuilder{
 }
 
 class GroupingBuilder(val baseStream: Tube) extends BaseGroupingBuilder
-  with WithCustomOperation[GroupingBuilder,(RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]]
+  with WithCustomOperation[GroupingBuilder,(RichTupleEntry, Iterator[RichTupleEntry]) => List[TupleEntry]]
   with WithOperationResult[GroupingBuilder]{
 
   withInput(ALL)
@@ -63,7 +63,7 @@ class GroupingBuilder(val baseStream: Tube) extends BaseGroupingBuilder
 
 class CoGroupingBuilder(val baseStream: Tube, val rightStream: Tube) extends BaseGroupingBuilder
   with JoinApply[CoGroupingBuilder]
-  with WithCustomOperation[CoGroupingBuilder,(RichTupleEntry, Iterator[RichTupleEntry]) => List[RichTupleEntry]]
+  with WithCustomOperation[CoGroupingBuilder,(RichTupleEntry, Iterator[RichTupleEntry]) => List[TupleEntry]]
   with WithOperationResult[CoGroupingBuilder]{
 
   var joinFields:Fields = null

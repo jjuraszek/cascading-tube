@@ -2,14 +2,14 @@ package jj.tube.builders
 
 import cascading.pipe.Each
 import jj.tube._
-import cascading.tuple.Fields
+import cascading.tuple.{TupleEntry, Fields}
 import cascading.tuple.Fields._
 import cascading.operation.{FunctionCall, BaseOperation, Function}
 import cascading.flow.FlowProcess
 import scala.language.{reflectiveCalls,existentials}
 
 class EachBuilder(val baseStream: Tube) extends OperationBuilder
-  with WithCustomOperation[EachBuilder,RichTupleEntry => List[RichTupleEntry]]
+  with WithCustomOperation[EachBuilder,RichTupleEntry => List[TupleEntry]]
   with WithOperationResult[EachBuilder]{
 
   declaring(UNKNOWN)
@@ -18,7 +18,7 @@ class EachBuilder(val baseStream: Tube) extends OperationBuilder
   def go =
     baseStream << new Each(baseStream, input, asFunction(operation).setOutputScheme(operationScheme), resultScheme)
 
-  def asFunction(transform: (RichTupleEntry => List[RichTupleEntry])) =
+  def asFunction(transform: (RichTupleEntry => List[TupleEntry])) =
     new BaseOperation[Any] with Function[Any] {
       override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
         transform(functionCall.getArguments).foreach{ richTupleEntry =>
