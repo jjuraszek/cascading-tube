@@ -43,8 +43,8 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
     runFlow
       .withSource(inputWords, srcWords)
       .withOutput(inputWords, {
-      _ should contain only "a"
-    }).compute
+        _ should contain only "a"
+      }).compute
   }
 
   test("list number of childs for each parent with one coGroup operation"){
