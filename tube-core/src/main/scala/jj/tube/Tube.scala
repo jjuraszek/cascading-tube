@@ -72,7 +72,7 @@ class Tube(var pipe: Pipe) extends GroupOperator with RowOperator with FieldsOpe
    * @param filter closure predicate intersecting original tube
    * @return tuple of two tubes. First conforming to the filter and second one not confirming to it
    */
-  def split(input: Fields = ALL)(filter: RichTupleEntry => Boolean) =
+  def split(input: Fields = ALL)(filter: FILTER) =
     (Tube("positive_" + pipe.getName, this.pipe)
         .filter(filter).withInput(input).go,
      Tube("negative_" + pipe.getName, this.pipe)
@@ -222,6 +222,7 @@ trait RowOperator {
    */
   //TODO each supporting List => List
   //TODO operate on serialized value (ex. Json)
+  @deprecated("to be remove in ver.4","3.0.0")
   def each(input: Fields = ALL, funcScheme: Fields = UNKNOWN, outScheme: Fields = ALL)
           (function: (Map[String, String] => Map[String, Any])) =
     this << new Each(this, input, asFunction(function).setOutputScheme(funcScheme), outScheme)
@@ -234,6 +235,7 @@ trait RowOperator {
    * @param function transforming closure
    * @return row scheme. values from input replaced
    */
+  @deprecated("to be remove in ver.4","3.0.0")
   def replace(input: Fields, funcScheme: Fields = ARGS)
              (function: (Map[String, String] => Map[String, Any])) =
     if (funcScheme == ARGS) each(input, funcScheme, REPLACE)(function)
@@ -258,13 +260,13 @@ trait RowOperator {
    * @param filter closure predicate. If true rule out the row
    * @return fields are not altered. Only row count is different
    */
-  def filter(filter:RichTupleEntry => Boolean) = new FilterBuilder(this)(!filter(_))
+  def filter(filter:FILTER) = new FilterBuilder(this)(!filter(_))
 
   /**
    *
    * @see filter working as opposite filter
    */
-  def filterNot(filter:RichTupleEntry => Boolean) = new FilterBuilder(this)(filter)
+  def filterNot(filter:FILTER) = new FilterBuilder(this)(filter)
 
   /**
    * Delete duplicates from this tube

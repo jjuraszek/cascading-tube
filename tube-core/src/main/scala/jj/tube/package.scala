@@ -8,12 +8,49 @@ import java.util.Comparator
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
  */
-package object tube extends TupleConversions {
+package object tube extends TupleConversions with OperationShortcuts with SortShortcut{
   implicit def toPipe(tube: Tube) = tube.pipe
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
+
+  type FUNCTION = RichTupleEntry => List[TupleEntry]
+  type BUFFER = (RichTupleEntry, Iterator[RichTupleEntry]) => List[TupleEntry]
+  type FILTER = RichTupleEntry => Boolean
+
+  /**allow easy operations on TupleEntry without allocation **/
+  implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
+    def apply[T](alias:String):T = tupleEntry.getObject(alias).asInstanceOf[T]
+    def apply[T](position:Int):T = tupleEntry.getObject(position).asInstanceOf[T]
+
+    def toMap = (0 until tupleEntry.getFields.size).map{ i =>
+      tupleEntry.getFields.get(i).toString -> Option(tupleEntry.getObject(i)).getOrElse("").toString
+    }.toMap
+  }
+}
+
+trait OperationShortcuts extends FieldsConversions{
   /** finalize builder by applying it to Tube */
   implicit def backToTube(builder: OperationBuilder) = builder.go
 
+  implicit def toTupleEntryList(schemeWithValues: List[Map[String, String]]) =
+    schemeWithValues.map(toTupleEntry)
+
+  implicit def toTupleEntryList(schemeWithValues: Map[String, Any]) =
+    List(toTupleEntry(schemeWithValues))
+
+  implicit def toTupleEntry(schemeWithValues: Map[String, Any]):TupleEntry =
+    schemeWithValues.foldLeft(new TupleEntry(schemeWithValues.keys.toList, Tuple.size(schemeWithValues.size))) {
+      (te, entry) =>
+        entry._2 match {
+          case x: Boolean => te.setBoolean(entry._1, x)
+          case x: Int => te.setInteger(entry._1, x)
+          case x: Double => te.setDouble(entry._1, x)
+          case x => te.setString(entry._1, if (x != null) x.toString else "")
+        }
+        te
+    }
+}
+
+trait SortShortcut{
   /**
    * Define the sort order for declared fields and apply correct comparator for them
    * @param reverse
@@ -36,34 +73,6 @@ package object tube extends TupleConversions {
   def DESC(sortedFields: Fields) = SortOrder(sortedFields, reverse = true)
   /** create asc order for fields*/
   def ASC(sortedFields: Fields) = SortOrder(sortedFields, reverse = false)
-
-  /**allow easy operations on TupleEntry without allocation **/
-  implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
-    def apply[T](alias:String):T = tupleEntry.getObject(alias).asInstanceOf[T]
-    def apply[T](position:Int):T = tupleEntry.getObject(position).asInstanceOf[T]
-
-    def toMap = (0 until tupleEntry.getFields.size).map{ i =>
-      tupleEntry.getFields.get(i).toString -> Option(tupleEntry.getObject(i)).getOrElse("").toString
-    }.toMap
-  }
-
-  implicit def toTupleEntryList(schemeWithValues: List[Map[String, String]]) =
-    schemeWithValues.map(toTupleEntry)
-
-  implicit def toTupleEntryList(schemeWithValues: Map[String, Any]) =
-    List(toTupleEntry(schemeWithValues))
-
-  implicit def toTupleEntry(schemeWithValues: Map[String, Any]):TupleEntry =
-    schemeWithValues.foldLeft(new TupleEntry(schemeWithValues.keys.toList, Tuple.size(schemeWithValues.size))) {
-      (te, entry) =>
-        entry._2 match {
-          case x: Boolean => te.setBoolean(entry._1, x)
-          case x: Int => te.setInteger(entry._1, x)
-          case x: Double => te.setDouble(entry._1, x)
-          case x => te.setString(entry._1, if (x != null) x.toString else "")
-        }
-        te
-    }
 }
 
 @deprecated("to be remove in ver.4", "3.0.0")
