@@ -72,14 +72,11 @@ class Tube(var pipe: Pipe) extends GroupOperator with RowOperator with FieldsOpe
    * @param filter closure predicate intersecting original tube
    * @return tuple of two tubes. First conforming to the filter and second one not confirming to it
    */
-  def split(input: Fields = ALL)(filter: Map[String, String] => Boolean) = {
-    val positiveTube = Tube("positive_" + pipe.getName, this.pipe)
-    positiveTube.filter(input)(filter)
-
-    val negativeTube = Tube("negative_" + pipe.getName, this.pipe)
-    negativeTube.filterNot(input)(filter)
-    (positiveTube, negativeTube)
-  }
+  def split(input: Fields = ALL)(filter: RichTupleEntry => Boolean) =
+    (Tube("positive_" + pipe.getName, this.pipe)
+        .filter(filter).withInput(input).go,
+     Tube("negative_" + pipe.getName, this.pipe)
+        .filterNot(filter).withInput(input).go)
 
   /**
    * Allow to decorate current tube. Apply transformation to current tube
