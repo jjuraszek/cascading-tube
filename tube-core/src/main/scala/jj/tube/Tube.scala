@@ -242,6 +242,13 @@ trait RowOperator {
     else each(input, funcScheme)(function).discard(input)
 
   /**
+   * Replace fields with another values
+   * @param input fields to replace
+   * @return only input fields are altered in that transformation
+   */
+  def replace(input: Fields) = new EachBuilder(this).withInput(input).declaring(ARGS).withResult(REPLACE)
+
+  /**
    * Filtering this tube according to defined closure
    *
    * @param input fields of closure input
