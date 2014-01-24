@@ -2,7 +2,7 @@ package jj.tube.builders
 
 import cascading.pipe.{CoGroup, Every, GroupBy}
 import jj.tube._
-import cascading.tuple.{TupleEntry, Fields}
+import cascading.tuple.Fields
 import cascading.tuple.Fields._
 import scala.language.{reflectiveCalls,existentials}
 import cascading.operation.{BufferCall, Buffer, BaseOperation}
@@ -23,8 +23,7 @@ trait BaseGroupingBuilder extends OperationBuilder{
   def asBuffer(transform: BUFFER) =
     new BaseOperation[Any] with Buffer[Any] {
       override def operate(flowProcess: FlowProcess[_], bufferCall: BufferCall[Any]) {
-        val lazyIterator = bufferCall.getArgumentsIterator.map(new RichTupleEntry(_))
-        transform(bufferCall.getGroup, lazyIterator)
+        transform(bufferCall.getGroup, bufferCall.getArgumentsIterator)
           .map(_.tupleEntry)
           .foreach(bufferCall.getOutputCollector.add)
       }

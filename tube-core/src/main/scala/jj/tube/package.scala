@@ -12,9 +12,9 @@ package object tube extends TupleConversions with OperationShortcuts with SortSh
   implicit def toPipe(tube: Tube) = tube.pipe
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
 
-  type FUNCTION = RichTupleEntry => List[TupleEntry]
-  type BUFFER = (RichTupleEntry, Iterator[RichTupleEntry]) => List[TupleEntry]
-  type FILTER = RichTupleEntry => Boolean
+  type FUNCTION = TupleEntry => List[TupleEntry]
+  type BUFFER = (TupleEntry, Iterator[TupleEntry]) => List[TupleEntry]
+  type FILTER = TupleEntry => Boolean
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
