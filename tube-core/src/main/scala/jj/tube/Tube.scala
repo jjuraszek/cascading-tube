@@ -376,8 +376,8 @@ trait MathOperator {
    * Math operation with single operand. {@code operand} must be convertable to Double.
    */
   def math(operand: String, outField: String)(func: Double => Double) =
-    each(operand, outField) {
+    flatMap(operand) {
       row =>
-        Map(outField -> func(row(operand).toDouble))
-    }
+        Map(outField -> func(row.double(operand)))
+    }.declaring(outField).go
 }

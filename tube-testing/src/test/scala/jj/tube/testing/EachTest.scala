@@ -18,8 +18,8 @@ class EachTest extends FunSuite with BaseFlowTest with Matchers {
     val inputCharNums = Tube("charsWithNums")
       .coerce[Int]("num")
       .flatMap(Fields.ALL){ row =>
-        val count = row[Int]("num")
-        val c = row[String]("c")
+        val count = row.int("num")
+        val c = row("c")
         (1 to count).map {
           idx => Map("w"->s"$c$idx")
         }.toList

@@ -16,7 +16,7 @@ class FilterTest extends FunSuite with BaseFlowTest with Matchers{
     //when
     val inputWords = Tube("words")
       .filter{ row =>
-        val word = row[String]("word")
+        val word = row("word")
         word.length() < 3
       }.go
 
@@ -35,8 +35,8 @@ class FilterTest extends FunSuite with BaseFlowTest with Matchers{
     //when
     val inputWords = Tube("words")
       .filterNot{ row =>
-      val word = row[String]("word")
-      !(word.length() > 3 && row.tupleEntry.size() == 1)
+      val word = row("word")
+      !(word.length() > 3 && row.size() == 1)
     }.withInput("word")
     .retain("word")
 

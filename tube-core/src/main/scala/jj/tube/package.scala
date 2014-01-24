@@ -8,7 +8,7 @@ import java.util.Comparator
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
  */
-package object tube extends TupleConversions with OperationShortcuts with SortShortcut{
+package object tube extends OperationShortcuts with SortShortcut{
   implicit def toPipe(tube: Tube) = tube.pipe
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
 
@@ -18,8 +18,17 @@ package object tube extends TupleConversions with OperationShortcuts with SortSh
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
-    def apply[T](alias:String):T = tupleEntry.getObject(alias).asInstanceOf[T]
-    def apply[T](position:Int):T = tupleEntry.getObject(position).asInstanceOf[T]
+    def get[T](alias:String):T = tupleEntry.getObject(alias).asInstanceOf[T]
+    def get[T](position:Int):T = tupleEntry.getObject(position).asInstanceOf[T]
+
+    def apply(alias:String) = get[String](alias)
+    def apply(position:Int) = get[String](position)
+
+    def int(alias:String) = get[Int](alias)
+    def int(position:Int) = get[Int](position)
+
+    def double(alias:String) = get[Double](alias)
+    def double(position:Int) = get[Double](position)
 
     def toMap = (0 until tupleEntry.getFields.size).map{ i =>
       tupleEntry.getFields.get(i).toString -> Option(tupleEntry.getObject(i)).getOrElse("").toString
