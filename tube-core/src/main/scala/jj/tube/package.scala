@@ -15,6 +15,7 @@ package object tube extends OperationShortcuts with SortShortcut{
   type FUNCTION = TupleEntry => List[TupleEntry]
   type BUFFER = (TupleEntry, Iterator[TupleEntry]) => List[TupleEntry]
   type FILTER = TupleEntry => Boolean
+  type JOIN = (Iterator[TupleEntry], Iterator[TupleEntry]) => List[TupleEntry]
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {

@@ -24,8 +24,7 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
         .sum[Int]("num","sum")
         .max("num","max")
         .min("num","min")
-        .count("count")
-      .go
+        .count("count").go
 
     //then
     runFlow
@@ -43,7 +42,7 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
     val inputNumbers = Tube("numbers")
       .aggregate("no")
       .sum("no","sum")
-      .go
+
 
     //then
     runFlow
@@ -63,7 +62,7 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
       .aggregate("no")
       .first(DESC("weight"))
       .first(DESC("weightInInt"))
-      .go
+
 
     //then
     runFlow

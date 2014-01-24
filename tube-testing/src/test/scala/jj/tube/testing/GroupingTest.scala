@@ -37,7 +37,8 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
     val inputWords = Tube("words")
       .groupBy("id").sorted(ASC("w")){ (group, row) =>
         List(row.next().tupleEntry)
-      }.declaring("w").go
+      }.declaring("w")
+      .go
 
     //then
     runFlow
@@ -62,7 +63,6 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
           Map("name" -> firstChild("name"),"no"->(1 +row.count( _ => true)))
         )
       }.declaring("name","no")
-      .go
 
     //then
     runFlow

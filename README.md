@@ -16,7 +16,7 @@ Writing MR hadoop jobs in tube is going to be more functional but in the other h
   - **tube-testing** Containing class simplify testing of your flows by providing MemoryTap and boilerplate for running it within unit testing scope. Provide samples as unit test of tube.
   - **tube-core** Tube object and every operators refactored to be in separated files accordingly to logic purpose.
   - **tube-io** Place for SQL sink tap allowing major use case of presenting MR results to more responsive layer. Module for standard CSV tap builders and real flow runner using JobConf.
-- **3.0.x** Provide builders flow transformation
+- **3.0.x [DONE]** Provide builders flow transformation
   - for joins and coGroups like ops including list of output fields.
   - for buffers, functions and filters.
   - deprecation of _currying_ style of those functions.

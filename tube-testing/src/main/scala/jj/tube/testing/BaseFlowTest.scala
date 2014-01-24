@@ -6,6 +6,7 @@ import cascading.flow.local.LocalFlowConnector
 import jj.tube.io.tap.MemTap
 import cascading.pipe.Pipe
 import jj.tube.testing.BaseFlowTest.FlowRunner
+import jj.tube.Tube
 
 object BaseFlowTest {
 
@@ -19,12 +20,12 @@ object BaseFlowTest {
     val flowDef = FlowDef.flowDef()
     val asserts = scala.collection.mutable.Map.empty[MemTap,Set[String] => _]
 
-    def withSource(start: Pipe, input:Source) = {
+    def withSource(start: Tube, input:Source) = {
       flowDef.addSource(start, MemTap.input(input.data, input.schema))
       this
     }
 
-    def withOutput(end:Pipe, assert: (Set[String] => Any) = null) = {
+    def withOutput(end:Tube, assert: (Set[String] => Any) = null) = {
       val out = MemTap.output()
       flowDef.addTailSink(end, out)
       if(assert != null)asserts.put(out, assert)

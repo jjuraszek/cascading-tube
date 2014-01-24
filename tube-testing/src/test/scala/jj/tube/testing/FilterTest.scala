@@ -18,7 +18,7 @@ class FilterTest extends FunSuite with BaseFlowTest with Matchers{
       .filter{ row =>
         val word = row("word")
         word.length() < 3
-      }.go
+      }
 
     //then
     runFlow

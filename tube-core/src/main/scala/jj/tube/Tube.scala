@@ -173,6 +173,11 @@ trait GroupOperator {
   def coGroup(rightCollection:Tube) = new CoGroupingBuilder(this,rightCollection)
 
   /**
+   * allow joining on two streams with specific keys and custom predicates and pre-filling
+   */
+  def customJoin(rightCollection:Tube) = new CustomJoinBuilder(this,rightCollection)
+
+  /**
    * Join this tube with other tube fit to be in memory.
    *
    * @param leftKey this tube join key
@@ -367,10 +372,10 @@ trait MathOperator {
    * Math operation with left and right operand. {@code leftOp} and {@code rightOp} must be convertable to Double.
    */
   def math(leftOp: String, rightOp: String, outField: String)(func: (Double, Double) => Double) =
-    each((leftOp, rightOp), outField) {
+    flatMap(leftOp, rightOp) {
       row =>
         Map(outField -> func(row(leftOp).toDouble, row(rightOp).toDouble))
-    }
+    }.declaring(outField)
 
   /**
    * Math operation with single operand. {@code operand} must be convertable to Double.

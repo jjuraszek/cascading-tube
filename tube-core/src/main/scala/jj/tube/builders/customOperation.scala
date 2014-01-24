@@ -3,7 +3,7 @@ package jj.tube.builders
 import cascading.tuple.Fields
 
 /**
- * allow apply custom operation like filter,buffor etc to Tube
+ * allow apply custom operation like filter,buffer etc to Tube
  */
 trait WithCustomOperation[T, OP] {this: T =>
   var input:Fields = null

@@ -9,7 +9,6 @@ import cascading.operation.{BufferCall, Buffer, BaseOperation}
 import cascading.flow.FlowProcess
 import scala.collection.convert.WrapAsScala.asScalaIterator
 import jj.tube.SortOrder
-import jj.tube.RichTupleEntry
 
 trait BaseGroupingBuilder extends OperationBuilder{
   val baseStream:Tube
@@ -24,7 +23,6 @@ trait BaseGroupingBuilder extends OperationBuilder{
     new BaseOperation[Any] with Buffer[Any] {
       override def operate(flowProcess: FlowProcess[_], bufferCall: BufferCall[Any]) {
         transform(bufferCall.getGroup, bufferCall.getArgumentsIterator)
-          .map(_.tupleEntry)
           .foreach(bufferCall.getOutputCollector.add)
       }
 
@@ -62,6 +60,7 @@ class GroupingBuilder(val baseStream: Tube) extends BaseGroupingBuilder
 
 class CoGroupingBuilder(val baseStream: Tube, val rightStream: Tube) extends BaseGroupingBuilder
   with JoinApply[CoGroupingBuilder]
+  with WithJoinStrategy[CoGroupingBuilder]
   with WithCustomOperation[CoGroupingBuilder,BUFFER]
   with WithOperationResult[CoGroupingBuilder]{
 
