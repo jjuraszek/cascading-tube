@@ -20,7 +20,7 @@ Writing MR hadoop jobs in tube is going to be more functional but in the other h
   - for joins and coGroups like ops including list of output fields.
   - for buffers, functions and filters.
   - deprecation of _currying_ style of those functions.
-- **3.1.x** Support new operations from *cascading 2.5.x* like BufferJoin and more
+- **3.1.x** Support new operations from *cascading 2.5.x* like BufferJoin and more and operating on JSON inside any field of TupleEntry and returning list of Tuples (and List of Lists) as vectors of transformation
 - **4.0.x** Removed deprecation functions and small improvement will be added
 - **4.1.x** Updated road map and every libs dependencies
 - **5.0.x** Support buffers, filters and functions to be defined as PartialFunction (no need for Map-s all over the place but number of input fields will be 22)
