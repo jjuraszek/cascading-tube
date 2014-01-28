@@ -21,9 +21,8 @@ class EachBuilder(val baseStream: Tube) extends OperationBuilder
   def asFunction(transform: FUNCTION) =
     new BaseOperation[Any] with Function[Any] {
       override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
-        transform(functionCall.getArguments).foreach{ richTupleEntry =>
-          functionCall.getOutputCollector.add(richTupleEntry.tupleEntry)
-        }
+        transform(functionCall.getArguments)
+          .foreach(writeTupleEntryToOutput(_, functionCall.getOutputCollector))
       }
 
       def setOutputScheme(field: Fields) = {

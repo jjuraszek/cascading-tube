@@ -78,7 +78,7 @@ class CustomJoinBuilder(val leftStream: Tube, val rightStream: Tube) extends Joi
         val leftStream = joiner.getIterator(0).map(new TupleEntry(joiner.getValueFields()(0),_))
         val rightStream = joiner.getIterator(1).map(new TupleEntry(joiner.getValueFields()(1),_))
         transform(leftStream, rightStream)
-          .foreach(bufferCall.getOutputCollector.add)
+          .foreach(writeTupleEntryToOutput(_, bufferCall.getOutputCollector))
       }
 
       def setOutputScheme(field: Fields) = {

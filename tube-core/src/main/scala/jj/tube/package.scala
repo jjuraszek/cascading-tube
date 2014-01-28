@@ -58,6 +58,18 @@ trait OperationShortcuts extends FieldsConversions{
         }
         te
     }
+
+  implicit def toSimpleTupleEntry(entry: Seq[Any]) = List(tuple(entry))
+
+  implicit def toSimpleTupleEntryList(entries: Iterator[Seq[Any]]) =
+    entries.map(tuple).toList
+
+  def tuple(entry: Seq[Any]):TupleEntry = new TupleEntry(Fields.UNKNOWN, entry.foldLeft(new Tuple){
+    (tup, nextVal) => {
+      tup.add(nextVal)
+      tup
+    }
+  })
 }
 
 trait SortShortcut{

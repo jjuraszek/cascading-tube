@@ -23,7 +23,7 @@ trait BaseGroupingBuilder extends OperationBuilder{
     new BaseOperation[Any] with Buffer[Any] {
       override def operate(flowProcess: FlowProcess[_], bufferCall: BufferCall[Any]) {
         transform(bufferCall.getGroup, bufferCall.getArgumentsIterator)
-          .foreach(bufferCall.getOutputCollector.add)
+          .foreach(writeTupleEntryToOutput(_, bufferCall.getOutputCollector))
       }
 
       def setOutputScheme(field: Fields) = {

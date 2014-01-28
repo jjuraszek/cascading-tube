@@ -61,10 +61,10 @@ class JoinTest extends FunSuite with BaseFlowTest with Matchers {
       }).compute
   }
 
-  test("should implement strategy to join parent with child under age 18 or parent with info that he has no children"){
+  test("should implement strategy to join parent with child under age 18 or parent with info that he has no children or orphant child"){
     //given
     val srcParent = Source(("name","id"), List(("joe","1"),("carol","2"),("sue","3")))
-    val srcChildren = Source(("id","age"), List(("1","17"),("2","35"),("2","16")))
+    val srcChildren = Source(("id","age"), List(("1","17"),("2","35"),("2","16"),("4","20")))
 
     //when
     val inputParents = Tube("parents")
@@ -72,12 +72,13 @@ class JoinTest extends FunSuite with BaseFlowTest with Matchers {
       .coerce[Int]("age")
     val ageOfOldestChildPerParent = Tube("parentWithChildAge",inputParents)
       .customJoin(inputChildren).on("id") { (parents, children) =>
-        val parent = parents.next()
-        val underAgeChildren = children.filter(_.int("age")<18)
-        if(underAgeChildren.isEmpty)List(Map("name" -> parent("name"), "age" -> "NO_CHILD"))
-        else underAgeChildren.map { row:TupleEntry =>
-          toTupleEntry(Map("name" -> parent("name"), "age" -> row.int("age")))
-        }.toList
+        if(parents.hasNext){
+          val parent = parents.next()
+          val underAgeChildren = children.filter(_.int("age")<18)
+          if(underAgeChildren.isEmpty)Seq(parent("name"), "NO_CHILD")
+          else underAgeChildren.map(row => Seq(parent("name"), row.int("age")))
+        }else
+          children.map{ row => List("NO_PARENT", row.int("age"))}
       }.declaring("name","age")
 
     //then
@@ -85,7 +86,7 @@ class JoinTest extends FunSuite with BaseFlowTest with Matchers {
       .withSource(inputParents, srcParent)
       .withSource(inputChildren, srcChildren)
       .withOutput(ageOfOldestChildPerParent, {
-      _ should contain only("joe,17", "carol,16","sue,NO_CHILD")
+      _ should contain only("joe,17", "carol,16","sue,NO_CHILD","NO_PARENT,20")
     }).compute
   }
 }
