@@ -4,11 +4,15 @@ import cascading.tuple.{TupleEntry, Fields, Tuple}
 import cascading.pipe.Pipe
 import jj.tube.builders.OperationBuilder
 import java.util.Comparator
+import org.json4s._
+import org.json4s.native.JsonMethods._
 
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
  */
 package object tube extends OperationShortcuts with SortShortcut{
+  implicit val formats = DefaultFormats
+
   implicit def toPipe(tube: Tube) = tube.pipe
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
 
@@ -30,6 +34,9 @@ package object tube extends OperationShortcuts with SortShortcut{
 
     def double(alias:String) = get[Double](alias)
     def double(position:Int) = get[Double](position)
+
+    def json(alias:String) = parse(get[String](alias))
+    def json(position:Int) = parse(get[String](position))
 
     def toMap = (0 until tupleEntry.getFields.size).map{ i =>
       tupleEntry.getFields.get(i).toString -> Option(tupleEntry.getObject(i)).getOrElse("").toString
