@@ -39,7 +39,7 @@ class EachTest extends FunSuite with BaseFlowTest with Matchers {
 
   test("should extract json inner values"){
     //given
-    val srcPerson = Source(("j"), List("""{
+    val srcPerson = Source("j", List("""{
           "name": "joe",
           "address":{
             "name": "white tower",
@@ -47,12 +47,13 @@ class EachTest extends FunSuite with BaseFlowTest with Matchers {
             "number": "12"
           }
         }"""))
-
     //when
     val inputPerson = Tube("person")
       .flatMap(Fields.ALL){ row =>
         val j = row.json("j")
-        Seq((j \ "name").extract[String], (j \\ "street").extract[String])
+        Seq(
+          (j \ "name").extract[String],
+          (j \\ "street").extract[String])
       }.declaring("name", "street")
       .withResult(Fields.RESULTS)
       .go

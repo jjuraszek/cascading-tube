@@ -11,19 +11,14 @@ import scala.collection.convert.WrapAsScala.asScalaIterator
 import jj.tube.SortOrder
 
 trait BaseGroupingBuilder extends OperationBuilder{
-  val baseStream:Tube
-  var input:Fields
-  var operation: BUFFER
-  var operationScheme:Fields
-  var resultScheme:Fields
-
-  def every = new Every(baseStream, input, asBuffer(operation).setOutputScheme(operationScheme), resultScheme)
+  def every(baseStream:Tube,inputScheme:Fields,operation: BUFFER,declaringScheme:Fields,resultScheme:Fields) = 
+    new Every(baseStream, inputScheme, asBuffer(operation).setOutputScheme(declaringScheme), resultScheme)
 
   def asBuffer(transform: BUFFER) =
     new BaseOperation[Any] with Buffer[Any] {
       override def operate(flowProcess: FlowProcess[_], bufferCall: BufferCall[Any]) {
         transform(bufferCall.getGroup, bufferCall.getArgumentsIterator)
-          .foreach(writeTupleEntryToOutput(_, bufferCall.getOutputCollector))
+          .foreach(WithCustomOperation.writeTupleEntryToOutput(_, bufferCall.getOutputCollector))
       }
 
       def setOutputScheme(field: Fields) = {
@@ -55,10 +50,12 @@ class GroupingBuilder(val baseStream: Tube) extends BaseGroupingBuilder
   }
 
   def go =
-    baseStream << new GroupBy(baseStream, keys, order.sortedFields, order.reverse) << every
+    baseStream << {
+      new GroupBy(baseStream, keys, order.sortedFields, order.reverse)
+    } << every(baseStream, inputScheme, operation, declaringScheme, resultScheme)
 }
 
-class CoGroupingBuilder(val baseStream: Tube, val rightStream: Tube) extends BaseGroupingBuilder
+class CoGroupingBuilder(val leftStream: Tube, val rightStream: Tube) extends BaseGroupingBuilder
   with JoinApply[CoGroupingBuilder]
   with WithJoinStrategy[CoGroupingBuilder]
   with WithCustomOperation[CoGroupingBuilder,BUFFER]
@@ -79,7 +76,7 @@ class CoGroupingBuilder(val baseStream: Tube, val rightStream: Tube) extends Bas
   }
 
   override def go =
-    baseStream << {
-      new CoGroup(baseStream, leftStreamKey, rightStream, rightStreamKey, joinFields, joinerImpl)
-    } << every
+    leftStream << {
+      new CoGroup(leftStream, leftStreamKey, rightStream, rightStreamKey, joinFields, joinStrategy)
+    } << every(leftStream, inputScheme, operation, declaringScheme, resultScheme)
 }

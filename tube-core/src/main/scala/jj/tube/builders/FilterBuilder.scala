@@ -13,7 +13,7 @@ class FilterBuilder(val baseStream: Tube) extends  OperationBuilder
   withInput(Fields.ALL)
 
   def go =
-    baseStream << new Each(baseStream, input, asFilter(operation))
+    baseStream << new Each(baseStream, inputScheme, asFilter(operation))
 
   def asFilter(isRemovable: FILTER): Filter[Any] =
     new BaseOperation[Any] with Filter[Any] {

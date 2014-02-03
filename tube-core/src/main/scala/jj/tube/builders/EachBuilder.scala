@@ -16,13 +16,13 @@ class EachBuilder(val baseStream: Tube) extends OperationBuilder
   withInput(ALL)
 
   def go =
-    baseStream << new Each(baseStream, input, asFunction(operation).setOutputScheme(operationScheme), resultScheme)
+    baseStream << new Each(baseStream, inputScheme, asFunction(operation).setOutputScheme(declaringScheme), resultScheme)
 
   def asFunction(transform: FUNCTION) =
     new BaseOperation[Any] with Function[Any] {
       override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
         transform(functionCall.getArguments)
-          .foreach(writeTupleEntryToOutput(_, functionCall.getOutputCollector))
+          .foreach(WithCustomOperation.writeTupleEntryToOutput(_, functionCall.getOutputCollector))
       }
 
       def setOutputScheme(field: Fields) = {

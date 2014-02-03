@@ -6,7 +6,6 @@ import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import jj.tube._
 import jj.tube.testing.BaseFlowTest.Source
-import cascading.tuple.TupleEntry
 
 @RunWith(classOf[JUnitRunner])
 class JoinTest extends FunSuite with BaseFlowTest with Matchers {

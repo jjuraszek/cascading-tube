@@ -12,21 +12,20 @@ import cascading.flow.FlowProcess
 import scala.collection.convert.WrapAsScala.asScalaIterator
 import scala.language.{reflectiveCalls,existentials}
 
-trait WithJoinStrategy[T] extends OperationBuilder{ this: T =>
+trait WithJoinStrategy[T] { this: T =>
 
-  var joinerImpl:Joiner = new InnerJoin
+  var joinStrategy:Joiner = new InnerJoin
 
   /**
    * set up inner, outter or other custom strategy
    */
-  def withJoinStrategy(joiner: Joiner) = {
-    joinerImpl = joiner
+  def withJoinStrategy(joinStrategy: Joiner) = {
+    this.joinStrategy = joinStrategy
     this
   }
 }
 
-trait JoinApply[T] extends OperationBuilder
-  with WithOperationResult[T]{ this: T =>
+trait JoinApply[T] extends WithOperationResult[T]{ this: T =>
 
   var leftStreamKey:Fields = _
   var rightStreamKey:Fields = _
@@ -50,17 +49,24 @@ trait JoinApply[T] extends OperationBuilder
   }
 }
 
-class JoinBuilder(val leftStream: Tube, val rightStream: Tube) extends JoinApply[JoinBuilder] with WithJoinStrategy[JoinBuilder]{
+class JoinBuilder(val leftStream: Tube, val rightStream: Tube) extends OperationBuilder
+  with JoinApply[JoinBuilder]
+  with WithJoinStrategy[JoinBuilder]{
+
   def go =
-    leftStream << new CoGroup(leftStream, leftStreamKey, rightStream, rightStreamKey, operationScheme, resultScheme, joinerImpl)
+    leftStream << new CoGroup(leftStream, leftStreamKey, rightStream, rightStreamKey, declaringScheme, resultScheme, joinStrategy)
 }
 
-class HashJoinBuilder(val leftStream: Tube, val rightStream: Tube) extends JoinApply[HashJoinBuilder] with WithJoinStrategy[HashJoinBuilder] {
+class HashJoinBuilder(val leftStream: Tube, val rightStream: Tube)  extends OperationBuilder
+  with JoinApply[HashJoinBuilder]
+  with WithJoinStrategy[HashJoinBuilder] {
+
   def go =
-    leftStream << new HashJoin(leftStream, leftStreamKey, rightStream, rightStreamKey, operationScheme, joinerImpl)
+    leftStream << new HashJoin(leftStream, leftStreamKey, rightStream, rightStreamKey, declaringScheme, joinStrategy)
 }
 
-class CustomJoinBuilder(val leftStream: Tube, val rightStream: Tube) extends JoinApply[CustomJoinBuilder]
+class CustomJoinBuilder(val leftStream: Tube, val rightStream: Tube) extends OperationBuilder
+  with JoinApply[CustomJoinBuilder]
   with WithCustomOperation[CustomJoinBuilder,JOIN]{
 
   withInput(Fields.ALL)
@@ -69,7 +75,7 @@ class CustomJoinBuilder(val leftStream: Tube, val rightStream: Tube) extends Joi
   def go =
     leftStream << {
       new CoGroup(leftStream, leftStreamKey, rightStream, rightStreamKey, new BufferJoin)
-    } << new Every(leftStream, input, asCustomJoin(operation).setOutputScheme(operationScheme), resultScheme)
+    } << new Every(leftStream, inputScheme, asCustomJoin(operation).setOutputScheme(declaringScheme), resultScheme)
 
   private def asCustomJoin(transform: JOIN) =
     new BaseOperation[Any] with Buffer[Any] {
@@ -78,7 +84,7 @@ class CustomJoinBuilder(val leftStream: Tube, val rightStream: Tube) extends Joi
         val leftStream = joiner.getIterator(0).map(new TupleEntry(joiner.getValueFields()(0),_))
         val rightStream = joiner.getIterator(1).map(new TupleEntry(joiner.getValueFields()(1),_))
         transform(leftStream, rightStream)
-          .foreach(writeTupleEntryToOutput(_, bufferCall.getOutputCollector))
+          .foreach(WithCustomOperation.writeTupleEntryToOutput(_, bufferCall.getOutputCollector))
       }
 
       def setOutputScheme(field: Fields) = {
