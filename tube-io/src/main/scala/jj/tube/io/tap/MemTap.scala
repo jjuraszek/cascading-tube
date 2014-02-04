@@ -6,8 +6,8 @@ import cascading.tap.Tap
 import cascading.flow.FlowProcess
 import cascading.scheme.{Scheme, SinkCall, SourceCall, NullScheme}
 import scala.collection.mutable.{Set => MutSet}
-import scala.collection.Set
 import java.util.UUID
+import jj.tube._
 
 object MemTap {
   def input(data: List[Array[String]], fields: Array[String]) = new MemTap() {
@@ -16,7 +16,7 @@ object MemTap {
     }
 
     override def getScheme: Scheme[Nothing, Iterator[Tuple], Nothing, Nothing, Nothing] =
-      new NullScheme[Nothing, Iterator[Tuple], Nothing, Nothing, Nothing](new Fields(fields.asInstanceOf[Array[Comparable[Any]]]: _*), Fields.UNKNOWN) {
+      new NullScheme[Nothing, Iterator[Tuple], Nothing, Nothing, Nothing](fields, Fields.UNKNOWN) {
         override def source(flowProcess: FlowProcess[Nothing], sourceCall: SourceCall[Nothing, Iterator[Tuple]]): Boolean = {
           val newDate = sourceCall.getInput.hasNext
           if (newDate) sourceCall.getIncomingEntry.setTuple(sourceCall.getInput.next())
