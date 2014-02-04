@@ -25,17 +25,17 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
-    def get[T](alias:String):Option[T] = Try(tupleEntry.getObject(alias).asInstanceOf[T]).toOption
-    def get[T](position:Int):Option[T] = Try(tupleEntry.getObject(position).asInstanceOf[T]).toOption
+    def safe[T](alias:String):Option[T] = Try(tupleEntry.getObject(alias).asInstanceOf[T]).toOption
+    def safe[T](position:Int):Option[T] = Try(tupleEntry.getObject(position).asInstanceOf[T]).toOption
 
-    def apply(alias:String) = get[String](alias).get
-    def apply(position:Int) = get[String](position).get
+    def apply(alias:String) = safe[String](alias).get
+    def apply(position:Int) = safe[String](position).get
 
-    def int(alias:String) = get[Int](alias).get
-    def int(position:Int) = get[Int](position).get
+    def int(alias:String) = safe[Int](alias).get
+    def int(position:Int) = safe[Int](position).get
 
-    def double(alias:String) = get[Double](alias).get
-    def double(position:Int) = get[Double](position).get
+    def double(alias:String) = safe[Double](alias).get
+    def double(position:Int) = safe[Double](position).get
 
     def json(alias:String) = parse(apply(alias))
     def json(position:Int) = parse(apply(position))
