@@ -9,8 +9,9 @@ trait SortShortcut{
    * @param reverse
    */
   //TODO allow custom comparators by order builder
-  sealed case class SortOrder(sortedFields: Fields, reverse: Boolean = false) {
-    (0 until sortedFields.size).foreach {
+  abstract sealed class SortOrder(val reverse: Boolean) {
+    val sortedFields: Fields
+    if(!sortedFields.isUnknown)(0 until sortedFields.size).foreach {
       sortedFields.setComparator(_, new Comparator[Comparable[Any]] with Serializable {
         def compare(left: Comparable[Any], right: Comparable[Any]): Int = {
           if (reverse) right compareTo left
@@ -23,7 +24,9 @@ trait SortShortcut{
   }
 
   /** create desc order for fields*/
-  def DESC(sortedFields: Fields) = SortOrder(sortedFields, reverse = true)
+  case class DESC(sortedFields: Fields) extends SortOrder(true)
   /** create asc order for fields*/
-  def ASC(sortedFields: Fields) = SortOrder(sortedFields, reverse = false)
+  case class ASC(sortedFields: Fields) extends SortOrder(false)
+  /** no sort indicator**/
+  case class NO_SORT(sortedFields: Fields= Fields.UNKNOWN) extends SortOrder(false)
 }

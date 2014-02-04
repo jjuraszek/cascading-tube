@@ -36,7 +36,7 @@ class GroupingBuilder(val baseStream: Tube) extends BaseGroupingBuilder
   declaring(UNKNOWN)
   withResult(RESULTS)
 
-  var order = SortOrder(UNKNOWN)
+  var order:SortOrder = NO_SORT().asInstanceOf[SortOrder]
   var keys:Fields = null
 
   def on(keys:Fields) = {this.keys = keys; this}
