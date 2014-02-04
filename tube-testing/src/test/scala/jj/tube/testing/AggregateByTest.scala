@@ -34,6 +34,27 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
       }).compute
   }
 
+  test("should support every of the casual operators: avg, sum, max, min with default output set to input"){
+    //given
+    val in = Source(("no","n1","n2","n3","n4"), List(("1","1","2","3","4")))
+
+    //when
+    val inputNumbers = Tube("numbers")
+      .aggregateBy("no")
+        .avg("n1")
+        .sum[Int]("n2")
+        .max("n3")
+        .min("n4")
+      .go
+
+    //then
+    runFlow
+      .withSource(inputNumbers, in)
+      .withOutput(inputNumbers, {
+        _ should contain only "1,1.0,2,3,4"
+      }).compute
+  }
+
   test("should take result type double if there is no type defined"){
     //given
     val in = Source("no", List("2"))

@@ -2,6 +2,7 @@ package jj.tube.builders
 
 import jj.tube._
 import cascading.tuple.Fields
+import cascading.tuple.Fields._
 import scala.language.{reflectiveCalls,existentials}
 import cascading.pipe.assembly._
 
@@ -11,6 +12,8 @@ class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  Operati
   val aggregators = scala.collection.mutable.ListBuffer.empty[AggregateBy]
   var threshold:Option[Int] = None
 
+  private def out(input:Fields,output:Fields) = if(output.isUnknown)input else output
+
   /** allow in memory aggreagation up to threshold */
   def withThreshold(threshold: Int) = {this.threshold = Some(threshold); this}
   /**
@@ -18,7 +21,7 @@ class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  Operati
    * @param input fields with numeric values
    * @param output field with stat result
    */
-  def avg(input:Fields,output:Fields) = {aggregators += new AverageBy(input, output); this}
+  def avg(input:Fields, output:Fields = UNKNOWN) = {aggregators += new AverageBy(input, out(input,output)); this}
 
   /**
    * create sumation stat for aggreagation
@@ -26,9 +29,9 @@ class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  Operati
    * @param output field with stat result
    * @tparam T outcome result type (supported Int and Double/Float)
    */
-  def sum[T](input:Fields,output:Fields)(implicit m: Manifest[T]) = {
+  def sum[T](input:Fields, output:Fields = UNKNOWN)(implicit m: Manifest[T]) = {
     val resultType = if(m.runtimeClass == classOf[Nothing]) classOf[Double] else m.runtimeClass
-    aggregators += new SumBy(input, output, resultType)
+    aggregators += new SumBy(input, out(input,output), resultType)
     this
   }
 
@@ -37,14 +40,14 @@ class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  Operati
    * @param input fields with numeric values
    * @param output field with stat result
    */
-  def max(input:Fields,output:Fields) = {aggregators += new MaxBy(input, output); this}
+  def max(input:Fields, output:Fields = UNKNOWN) = {aggregators += new MaxBy(input, out(input,output)); this}
 
   /**
    * create minimum stat for aggreagation
    * @param input fields with numeric values
    * @param output field with stat result
    */
-  def min(input:Fields,output:Fields) = {aggregators += new MinBy(input, output); this}
+  def min(input:Fields, output:Fields = UNKNOWN) = {aggregators += new MinBy(input, out(input,output)); this}
 
   /**
    * create count stat for aggreagation

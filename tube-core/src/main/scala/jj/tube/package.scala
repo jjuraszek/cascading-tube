@@ -5,6 +5,9 @@ import cascading.pipe.Pipe
 import org.json4s._
 import org.json4s.native.JsonMethods._
 import jj.tube.shorthands.{FieldsConversions, OperationShortcuts, SortShortcut}
+import scala.collection.convert.WrapAsScala.asScalaIterator
+import scala.collection.SortedMap
+import scala.collection.immutable.TreeMap
 
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
@@ -37,10 +40,12 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
     def json(alias:String) = parse(get[String](alias))
     def json(position:Int) = parse(get[String](position))
 
-    def +(value: (String,AnyRef)) = { tupleEntry.setObject(value._1, value._2)}
+    def +(value: (String,AnyRef)) = { tupleEntry.setObject(value._1, value._2); this}
 
-    def toMap = (0 until tupleEntry.getFields.size).map{ i =>
-      tupleEntry.getFields.get(i).toString -> Option(tupleEntry.getObject(i)).getOrElse("").toString
+    def toSortedMap = TreeMap(toMap.toArray:_*)
+
+    def toMap = tupleEntry.getFields.iterator.map{ i =>
+      i.toString -> Option(tupleEntry.getString(i.asInstanceOf[Comparable[_]])).getOrElse("")
     }.toMap
   }
 }
