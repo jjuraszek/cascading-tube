@@ -13,7 +13,7 @@ trait RowOperator {
    * @param key key used as group by aggreagation
    * @return builder for aggreagtion
    */
-  def aggregate(key: Fields) = new AggregateByBuilder(key, this)
+  def aggregateBy(key: Fields) = new AggregateByBuilder(key, this)
 
   /**
    * allow extract values for each row

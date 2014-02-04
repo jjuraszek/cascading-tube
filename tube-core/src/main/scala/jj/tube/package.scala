@@ -37,6 +37,8 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
     def json(alias:String) = parse(get[String](alias))
     def json(position:Int) = parse(get[String](position))
 
+    def +(value: (String,AnyRef)) = { tupleEntry.setObject(value._1, value._2)}
+
     def toMap = (0 until tupleEntry.getFields.size).map{ i =>
       tupleEntry.getFields.get(i).toString -> Option(tupleEntry.getObject(i)).getOrElse("").toString
     }.toMap

@@ -57,9 +57,4 @@ trait BaseFlowTest {
 
   def runFlow(flowDef: FlowDef) = BaseFlowTest.runFromDef(flowDef)
   def runFlow = new FlowRunner()
-
-  @deprecated("to be remove in ver.4","3.0.0")
-  def inTap(scheme: Array[String], data: List[Array[String]]) = MemTap.input(data, scheme)
-  @deprecated("to be remove in ver.4","3.0.0")
-  def outTap = MemTap.output()
 }

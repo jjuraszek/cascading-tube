@@ -5,7 +5,7 @@ import jj.tube.builders._
 import cascading.pipe.{Every, GroupBy}
 import cascading.tuple.Fields._
 import cascading.operation.buffer.FirstNBuffer
-import jj.tube.Tube
+import jj.tube._
 
 trait GroupOperator {
   this: Tube =>
@@ -19,13 +19,12 @@ trait GroupOperator {
    * Take top n rows from each group
    *
    * @param group fields defining group
-   * @param sort sorting fields in each group
-   * @param descending whether to sort group in descending order
+   * @param sortOrder sorting fields and order of sort in each group
    * @param limit how many rows to keep from each group
    * @return rows fields are not altered. Only row count is different
    */
-  def top(group: Fields, sort: Fields, descending: Boolean = false, limit: Int = 1) =
-    this << new GroupBy(this, group, sort, descending) << new Every(this, ALL, new FirstNBuffer(limit), ARGS)
+  def top(group: Fields, sortOrder: SortOrder, limit: Int = 1) =
+    this << new GroupBy(this, group, sortOrder.sortedFields, sortOrder.reverse) << new Every(this, ALL, new FirstNBuffer(limit), ARGS)
 
   /**
    * @param rightCollection right collection for joining
