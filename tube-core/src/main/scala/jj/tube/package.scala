@@ -43,6 +43,8 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
     def add(value: (String,Any)) = { tupleEntry.setObject(value._1, value._2); this}
     def addAll(extraFields: Map[String,Any]) = { extraFields.foreach(kv => tupleEntry.setObject(kv._1, kv._2)); this}
 
+    def copy = new TupleEntry(tupleEntry)
+
     def toSortedMap = TreeMap(toMap.toArray:_*)
 
     def toMap = tupleEntry.getFields.iterator.map{ i =>
