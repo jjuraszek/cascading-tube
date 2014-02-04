@@ -19,9 +19,9 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
 
   type FUNCTION = TupleEntry => List[TupleEntry]
-  type BUFFER = (TupleEntry, Iterator[TupleEntry]) => List[TupleEntry]
+  type BUFFER = (TupleEntry, Iterator[TupleEntry]) => TraversableOnce[TupleEntry]
   type FILTER = TupleEntry => Boolean
-  type JOIN = (Iterator[TupleEntry], Iterator[TupleEntry]) => List[TupleEntry]
+  type JOIN = (Iterator[TupleEntry], Iterator[TupleEntry]) => TraversableOnce[TupleEntry]
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
