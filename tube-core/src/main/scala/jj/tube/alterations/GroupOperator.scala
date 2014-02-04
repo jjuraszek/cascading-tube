@@ -23,7 +23,7 @@ trait GroupOperator {
    * @param limit how many rows to keep from each group
    * @return rows fields are not altered. Only row count is different
    */
-  def top(group: Fields, sortOrder: SortOrder, limit: Int = 1) =
+  def top[T<:SortOrder](group: Fields, sortOrder: T, limit: Int = 1) =
     this << new GroupBy(this, group, sortOrder.sortedFields, sortOrder.reverse) << new Every(this, ALL, new FirstNBuffer(limit), ARGS)
 
   /**
