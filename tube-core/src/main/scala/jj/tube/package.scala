@@ -6,8 +6,8 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import jj.tube.shorthands.{FieldsConversions, OperationShortcuts, SortShortcut}
 import scala.collection.convert.WrapAsScala.asScalaIterator
-import scala.collection.SortedMap
 import scala.collection.immutable.TreeMap
+import scala.util.Try
 
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
@@ -25,20 +25,20 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
-    def get[T](alias:String):T = tupleEntry.getObject(alias).asInstanceOf[T]
-    def get[T](position:Int):T = tupleEntry.getObject(position).asInstanceOf[T]
+    def get[T](alias:String):Option[T] = Try(tupleEntry.getObject(alias).asInstanceOf[T]).toOption
+    def get[T](position:Int):Option[T] = Try(tupleEntry.getObject(position).asInstanceOf[T]).toOption
 
-    def apply(alias:String) = get[String](alias)
-    def apply(position:Int) = get[String](position)
+    def apply(alias:String) = get[String](alias).get
+    def apply(position:Int) = get[String](position).get
 
-    def int(alias:String) = get[Int](alias)
-    def int(position:Int) = get[Int](position)
+    def int(alias:String) = get[Int](alias).get
+    def int(position:Int) = get[Int](position).get
 
-    def double(alias:String) = get[Double](alias)
-    def double(position:Int) = get[Double](position)
+    def double(alias:String) = get[Double](alias).get
+    def double(position:Int) = get[Double](position).get
 
-    def json(alias:String) = parse(get[String](alias))
-    def json(position:Int) = parse(get[String](position))
+    def json(alias:String) = parse(apply(alias))
+    def json(position:Int) = parse(apply(position))
 
     def add(value: (String,Any)) = { tupleEntry.setObject(value._1, value._2); this}
     def addAll(extraFields: Map[String,Any]) = { extraFields.foreach(kv => tupleEntry.setObject(kv._1, kv._2)); this}
