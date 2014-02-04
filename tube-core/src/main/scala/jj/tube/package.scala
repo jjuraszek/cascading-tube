@@ -40,7 +40,8 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
     def json(alias:String) = parse(get[String](alias))
     def json(position:Int) = parse(get[String](position))
 
-    def +(value: (String,AnyRef)) = { tupleEntry.setObject(value._1, value._2); this}
+    def add(value: (String,Any)) = { tupleEntry.setObject(value._1, value._2); this}
+    def addAll(extraFields: Map[String,Any]) = { extraFields.foreach(kv => tupleEntry.setObject(kv._1, kv._2)); this}
 
     def toSortedMap = TreeMap(toMap.toArray:_*)
 
