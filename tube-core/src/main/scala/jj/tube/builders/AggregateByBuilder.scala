@@ -59,7 +59,7 @@ class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  Operati
    * rewrite first value from input for that aggreagation
    * @param order defining order of values per field
    */
-  def first(order: SortOrder) = { aggregators += new FirstBy(order.sortedFields); this}
+  def first[T<:SortOrder](order: T) = { aggregators += new FirstBy(order.sortedFields); this}
 
   def go =
     baseStream << threshold
