@@ -44,7 +44,7 @@ class GroupingBuilder(val baseStream: Tube) extends BaseGroupingBuilder
   /**
    * imply sort of input for each transformation according to fields and direction
    */
-  def sorted(order: SortOrder) = {
+  def sorted[T<:SortOrder](order: T) = {
     this.order = order
     this
   }
