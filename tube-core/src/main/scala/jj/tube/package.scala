@@ -25,23 +25,34 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
-    def safe[T](alias:String):Option[T] = Try(tupleEntry.getObject(alias).asInstanceOf[T]).toOption
-    def safe[T](position:Int):Option[T] = Try(tupleEntry.getObject(position).asInstanceOf[T]).toOption
+    def safeGet[T](alias:String):Option[T] = Try(tupleEntry.getObject(alias).asInstanceOf[T]).toOption
+    def safeGet[T](position:Int):Option[T] = Try(tupleEntry.getObject(position).asInstanceOf[T]).toOption
 
-    def apply(alias:String) = safe[String](alias).get
-    def apply(position:Int) = safe[String](position).get
+    def apply(alias:String) = safeGet[String](alias).get
+    def apply(position:Int) = safeGet[String](position).get
 
-    def int(alias:String) = safe[Int](alias).get
-    def int(position:Int) = safe[Int](position).get
+    def int(alias:String) = safeGet[Int](alias).get
+    def int(position:Int) = safeGet[Int](position).get
 
-    def double(alias:String) = safe[Double](alias).get
-    def double(position:Int) = safe[Double](position).get
+    def double(alias:String) = safeGet[Double](alias).get
+    def double(position:Int) = safeGet[Double](position).get
 
     def json(alias:String) = parse(apply(alias))
     def json(position:Int) = parse(apply(position))
 
-    def add(value: (String,Any)) = { tupleEntry.setObject(value._1, value._2); this}
-    def addAll(extraFields: Map[String,Any]) = { extraFields.foreach(kv => tupleEntry.setObject(kv._1, kv._2)); this}
+    def add(value: (String,Any)) = {
+      val newEntry = new TupleEntry(value._1, cascading.tuple.Tuple.size(1))
+      if(Try(tupleEntry.getFields.getPos(value._1)).filter(_ >= 0).isSuccess){
+        tupleEntry.setObject(value._1,value._2)
+        tupleEntry
+      } else{
+        newEntry.setObject(value._1,value._2)
+        tupleEntry.appendNew(newEntry)
+      }
+    }
+    def addAll(extraFields: Map[String,Any]) = extraFields.foldLeft(tupleEntry){
+      (te,kv) => te.add(kv._1, kv._2)
+    }
 
     def copy = new TupleEntry(tupleEntry)
 
