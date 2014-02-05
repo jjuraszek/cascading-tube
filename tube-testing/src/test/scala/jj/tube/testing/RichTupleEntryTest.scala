@@ -46,4 +46,13 @@ class RichTupleEntryTest extends FunSuite with Matchers {
     //then
     "1.0" should be (result.toString)
   }
+
+  test("should return None option for null value of field"){
+    //given
+    val tupleEntry = new TupleEntry("a",cascading.tuple.Tuple.size(1))
+    //when
+    val result = tupleEntry.safeGet[String]("a")
+    //then
+    assert(result == None)
+  }
 }
