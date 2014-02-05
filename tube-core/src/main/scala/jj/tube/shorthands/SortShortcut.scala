@@ -6,7 +6,7 @@ import java.util.Comparator
 trait SortShortcut{
   /**
    * Define the sort order for declared fields and apply correct comparator for them
-   * @param reverse
+   * @param reverse negate output stream
    */
   //TODO allow custom comparators by order builder
   abstract sealed class SortOrder(val reverse: Boolean) {
@@ -14,8 +14,7 @@ trait SortShortcut{
     if(!sortedFields.isUnknown)(0 until sortedFields.size).foreach {
       sortedFields.setComparator(_, new Comparator[Comparable[Any]] with Serializable {
         def compare(left: Comparable[Any], right: Comparable[Any]): Int = {
-          if (reverse) right compareTo left
-          else left compareTo right
+          left compareTo right
         }
       })
     }

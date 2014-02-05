@@ -72,4 +72,36 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
         _ should contain only("joe,3", "carol,2")
       }).compute
   }
+
+  test("should get top for each group sorted ascending"){
+    //given
+    val srcWords = Source(("gr","num"), List(("1","1"),("1","2")))
+
+    //when
+    val inputWords = Tube("words")
+      .top("gr", ASC("num"))
+
+    //then
+    runFlow
+      .withSource(inputWords, srcWords)
+      .withOutput(inputWords, {
+      _ should contain only "1,1"
+    }).compute
+  }
+
+  test("should get top for each group sorted descending"){
+    //given
+    val srcWords = Source(("gr","num"), List(("1","2"),("1","1")))
+
+    //when
+    val inputWords = Tube("words")
+      .top("gr", DESC("num"))
+
+    //then
+    runFlow
+      .withSource(inputWords, srcWords)
+      .withOutput(inputWords, {
+      _ should contain only "1,2"
+    }).compute
+  }
 }
