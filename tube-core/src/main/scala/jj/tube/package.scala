@@ -37,6 +37,9 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
     def double(alias:String) = safeGet[Double](alias).get
     def double(position:Int) = safeGet[Double](position).get
 
+    def long(alias:String) = safeGet[Long](alias).get
+    def long(position:Int) = safeGet[Long](position).get
+
     def json(alias:String) = parse(apply(alias))
     def json(position:Int) = parse(apply(position))
 
