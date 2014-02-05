@@ -37,4 +37,13 @@ class RichTupleEntryTest extends FunSuite with Matchers {
     List("0","a","b") should be (result.getFields.iterator().toList.map(_.toString))
     List("1","c","d") should be (result.getTuple.iterator().toList.map(_.toString))
   }
+
+  test("should convert int to double on the fly while getting value"){
+    //given
+    val tupleEntry:TupleEntry = Map("a" -> 1)
+    //when
+    val result = tupleEntry.double("a")
+    //then
+    "1.0" should be (result.toString)
+  }
 }

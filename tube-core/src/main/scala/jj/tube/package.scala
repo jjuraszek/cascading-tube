@@ -25,8 +25,8 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
-    def safeGet[T](alias:String):Option[T] = Try(tupleEntry.getObject(alias).asInstanceOf[T]).toOption
-    def safeGet[T](position:Int):Option[T] = Try(tupleEntry.getObject(position).asInstanceOf[T]).toOption
+    def safeGet[T](alias:String)(implicit m: Manifest[T]):Option[T] = Try(tupleEntry.getObject(alias,m.runtimeClass).asInstanceOf[T]).toOption
+    def safeGet[T](position:Int)(implicit m: Manifest[T]):Option[T] = Try(tupleEntry.getObject(position,m.runtimeClass).asInstanceOf[T]).toOption
 
     def apply(alias:String) = safeGet[String](alias).get
     def apply(position:Int) = safeGet[String](position).get
