@@ -24,7 +24,7 @@ trait GroupOperator {
    * @return rows fields are not altered. Only row count is different
    */
   def top[T<:SortOrder](group: Fields, sortOrder: T, limit: Int = 1) =
-    this << new GroupBy(this, group, sortOrder.sortedFields, sortOrder.reverse) << new Every(this, ALL, new FirstNBuffer(limit), ARGS)
+    this << new GroupBy(this, group, sortOrder.sortedFields, false) << new Every(this, ALL, new FirstNBuffer(limit), ARGS)
 
   /**
    * @param rightCollection right collection for joining

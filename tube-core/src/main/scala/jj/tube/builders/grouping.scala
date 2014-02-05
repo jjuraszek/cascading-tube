@@ -51,7 +51,7 @@ class GroupingBuilder(val baseStream: Tube) extends BaseGroupingBuilder
 
   def go =
     baseStream << {
-      new GroupBy(baseStream, keys, order.sortedFields, order.reverse)
+      new GroupBy(baseStream, keys, order.sortedFields, false)
     } << every(baseStream, inputScheme, operation, declaringScheme, resultScheme)
 }
 
