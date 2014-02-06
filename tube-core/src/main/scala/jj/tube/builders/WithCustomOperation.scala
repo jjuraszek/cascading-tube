@@ -4,9 +4,11 @@ import cascading.tuple.{TupleEntryCollector, TupleEntry, Fields}
 
 object WithCustomOperation{
   def writeTupleEntryToOutput(tupleEntry:TupleEntry, collector: TupleEntryCollector) =
-    if(tupleEntry.getFields.isDefined)
-      collector.add(tupleEntry)
-    else collector.add(tupleEntry.getTuple)
+    if(tupleEntry.getTuple != null && tupleEntry.getTuple.size()>0){
+      if(tupleEntry.getFields.isDefined)
+        collector.add(tupleEntry)
+      else collector.add(tupleEntry.getTuple)
+    }
 }
 
 /**
