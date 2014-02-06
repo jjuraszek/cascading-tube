@@ -20,7 +20,7 @@ trait RowOperator {
    * @param input input to each operation
    * @return builder of each operator
    */
-  def flatMap(input: Fields = ALL) = new EachBuilder(this).withInput(input)
+  def flatMap(input: Fields = ALL) = new EachBuilder(this).withInput(input).withResult(ALL)
 
   /**
    * Replace fields with another values
