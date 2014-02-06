@@ -2,6 +2,7 @@ package jj.tube.shorthands
 
 import cascading.tuple.Fields
 import java.util.Comparator
+import jj.tube.util.StandardComparator
 
 trait SortShortcut{
   /**
@@ -12,12 +13,7 @@ trait SortShortcut{
   abstract sealed class SortOrder(val reverse: Boolean) {
     val sortedFields: Fields
     if(!sortedFields.isUnknown)(0 until sortedFields.size).foreach {
-      sortedFields.setComparator(_, new Comparator[Comparable[Any]] with Serializable {
-        def compare(left: Comparable[Any], right: Comparable[Any]): Int = {
-          if (reverse) right compareTo left
-          else left compareTo right
-        }
-      })
+      sortedFields.setComparator(_, new StandardComparator(reverse))
     }
 
     val isAscending = !reverse
