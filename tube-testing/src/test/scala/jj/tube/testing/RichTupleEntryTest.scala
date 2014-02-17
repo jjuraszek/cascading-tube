@@ -55,4 +55,13 @@ class RichTupleEntryTest extends FunSuite with Matchers {
     //then
     assert(result == None)
   }
+
+  test("should return empty string for no value"){
+    //given
+    val tupleEntry = new TupleEntry("a",cascading.tuple.Tuple.size(1))
+    //when
+    val result = tupleEntry("a")
+    //then
+    assert(result == "")
+  }
 }
