@@ -21,6 +21,10 @@ class EachBuilder(val baseStream: Tube) extends OperationBuilder
   def asFunction(transform: FUNCTION) =
     new BaseOperation[Any] with Function[Any] {
       override def operate(flowProcess: FlowProcess[_], functionCall: FunctionCall[Any]) {
+        def keep(te:TupleEntry) = functionCall.getOutputCollector
+
+        implicit val col = functionCall.getOutputCollector
+
         transform(functionCall.getArguments)
           .foreach(WithCustomOperation.writeTupleEntryToOutput(_, functionCall.getOutputCollector))
       }
