@@ -6,7 +6,7 @@ class StandardComparator(val reverse: Boolean) extends Comparator[Comparable[Any
   def compare(left: Comparable[Any], right: Comparable[Any]): Int = {
     val res = if (left == null && right == null) 0
     else if (left != null && right == null) 1
-    else if (left == null && right != null) 1
+    else if (left == null && right != null) -1
     else left compareTo right
 
     res * (if(reverse)-1 else 1)
