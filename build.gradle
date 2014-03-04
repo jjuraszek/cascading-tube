@@ -5,10 +5,10 @@ subprojects {
   apply plugin: 'maven'
 
   //version of cascading
-  ext.cascading = '2.5.1'
+  ext.cascading = '2.5.2'
 
   group = 'org.tube'
-  version = '4.0.4'
+  version = '4.0.5'
 
   dependencies {
     compile(

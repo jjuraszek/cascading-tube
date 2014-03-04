@@ -5,12 +5,31 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
 import org.scalatest.Matchers
 import jj.tube._
-import cascading.flow.FlowDef
 import jj.tube.testing.BaseFlowTest.Source
 
 @RunWith(classOf[JUnitRunner])
 class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
-  test("should support every of the casual operators: avg, sum, max, min, count"){
+  test("should count only not null"){
+    //given
+    val in = Source(("no","letter"), List(
+      ("1","a"),("1","b"),("1",null),
+      ("2","c"),("2",null)
+    ))
+
+    //when
+    val inputNumbers = Tube("numbers")
+      .debug()
+      .aggregateBy("no").countIgnoringNull("letter").go
+
+    //then
+    runFlow
+      .withSource(inputNumbers, in)
+      .withOutput(inputNumbers, {
+      _ should contain only ("1,2","2,1")
+    }).compute
+  }
+
+  /*test("should support every of the casual operators: avg, sum, max, min, count"){
     //given
     val in = Source(("no","num"), List(
       ("1","3"),("1","1"),("1","2"),
@@ -91,5 +110,5 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
       .withOutput(inputNumbers, {
       _ should contain only "2,3,14"
     }).compute
-  }
+  } */
 }

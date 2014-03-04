@@ -53,7 +53,8 @@ class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  Operati
    * create count stat for aggreagation
    * @param output field with stat result
    */
-  def count(output:Fields) = {aggregators += new CountBy(output); this}
+  def count(output:Fields, nullPolicy: CountBy.Include = CountBy.Include.ALL) = {aggregators += new CountBy(output, nullPolicy); this}
+  def countIgnoringNull(output:Fields) = count(output, CountBy.Include.NO_NULLS)
 
   /**
    * rewrite first value from input for that aggreagation

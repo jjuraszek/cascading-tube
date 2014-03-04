@@ -12,6 +12,7 @@ object BaseFlowTest {
 
   private def tupleToArray(product: Product) = product.productIterator.collect[String]{
     case s:String => s
+    case null => null
   }.toArray
   
   case class Source(schema: Array[String], data: List[Array[String]])
