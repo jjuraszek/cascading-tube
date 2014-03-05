@@ -18,7 +18,7 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
 
     //when
     val inputNumbers = Tube("numbers")
-      .aggregateBy("no").countIgnoringNull("letter", "out").go
+      .aggregateBy("no").countNotNull("letter").go
 
     //then
     runFlow

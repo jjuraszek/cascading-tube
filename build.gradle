@@ -8,7 +8,7 @@ subprojects {
   ext.cascading = '2.5.2'
 
   group = 'org.tube'
-  version = '4.0.5'
+  version = '4.0.6'
 
   dependencies {
     compile(
@@ -61,8 +61,6 @@ subprojects {
     }
   }
 }
-
-task upload(dependsOn: ['clean', 'test', 'install', 'deploy'])
 
 allprojects {
   apply plugin: 'idea'
