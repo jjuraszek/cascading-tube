@@ -18,8 +18,7 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
 
     //when
     val inputNumbers = Tube("numbers")
-      .debug()
-      .aggregateBy("no").countIgnoringNull("letter").go
+      .aggregateBy("no").countIgnoringNull("letter", "out").go
 
     //then
     runFlow
@@ -29,7 +28,7 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
     }).compute
   }
 
-  /*test("should support every of the casual operators: avg, sum, max, min, count"){
+  test("should support every of the casual operators: avg, sum, max, min, count"){
     //given
     val in = Source(("no","num"), List(
       ("1","3"),("1","1"),("1","2"),
@@ -110,5 +109,5 @@ class AggregateByTest extends FunSuite with BaseFlowTest with Matchers{
       .withOutput(inputNumbers, {
       _ should contain only "2,3,14"
     }).compute
-  } */
+  }
 }

@@ -23,6 +23,7 @@ Writing MR hadoop jobs in tube is going to be more functional but in the other h
 - **3.1.x [DONE]** Support new operations from *cascading 2.5.x* like BufferJoin and more and operating on JSON inside any field of TupleEntry and returning list of Tuples (and List of Lists) as vectors of transformation
 - **4.0.x [DONE]** Removed deprecation functions and small improvement (extra tests) will be added (tube alteration with c.o.BaseOperation impls)
 - **4.1.x** Updated road map and every libs dependencies
+- **4.2.x ** Include aggregateBy clojure construct
 
 Despite of that **cascading-tube.testing** will be constantly extended to show the capability of tube.
 

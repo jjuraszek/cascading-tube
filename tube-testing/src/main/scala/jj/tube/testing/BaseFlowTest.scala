@@ -10,7 +10,7 @@ import jj.tube.Tube
 
 object BaseFlowTest {
 
-  private def tupleToArray(product: Product) = product.productIterator.collect[String]{
+  private def tupleToArray(product: Product):Array[String] = product.productIterator.collect[String]{
     case s:String => s
     case null => null
   }.toArray
@@ -53,8 +53,7 @@ trait BaseFlowTest {
   implicit def singleFieldScheme(scheme: String) = Array(scheme)
   implicit def singleFieldData(data: List[String]) = data.map(Array(_)).toList
 
-  implicit def tupleScheme(scheme: Product) = BaseFlowTest.tupleToArray(scheme)
-  implicit def tupleData(data: List[Product]) = data.map(BaseFlowTest.tupleToArray).toList
+  implicit def toStringArray(tuple: Product) = BaseFlowTest.tupleToArray(tuple)
 
   def runFlow(flowDef: FlowDef) = BaseFlowTest.runFromDef(flowDef)
   def runFlow = new FlowRunner()
