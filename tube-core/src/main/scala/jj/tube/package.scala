@@ -44,7 +44,7 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
     def long(position:Int) = safeGet[Long](position).get
 
     def json(alias:String) = Try(parse(apply(alias))).toOption.getOrElse(JNothing)
-    def json(position:Int) = Try(parse(apply(alias))).toOption.getOrElse(JNothing)
+    def json(position:Int) = Try(parse(apply(position))).toOption.getOrElse(JNothing)
 
     def add(value: (String,Any)) = {
       val newEntry = new TupleEntry(value._1, cascading.tuple.Tuple.size(1))
