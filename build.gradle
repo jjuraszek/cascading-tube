@@ -8,7 +8,7 @@ subprojects {
   ext.cascading = '2.5.2'
 
   group = 'org.tube'
-  version = '4.0.6'
+  version = '4.0.8'
 
   dependencies {
     compile(

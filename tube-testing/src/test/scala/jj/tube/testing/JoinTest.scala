@@ -11,6 +11,7 @@ import jj.tube.testing.BaseFlowTest.Source
 class JoinTest extends FunSuite with BaseFlowTest with Matchers {
   test("join two individual based on id to get the age") {
     //given
+    //given
     val srcNames = Source(("id1", "name"), List(
       ("2", "dijkstra"),
       ("1", "hawking")))

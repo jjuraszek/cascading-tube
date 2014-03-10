@@ -55,8 +55,8 @@ class AggregateByBuilder(val keys:Fields, val baseStream: Tube) extends  Operati
    * @param output field with stat result
    * @param nullPolicy describe how to treat nulls in count. default include them.
    */
-  def count(value:Fields, output:Fields, nullPolicy: CountBy.Include) = {aggregators += new CountBy(value, output, nullPolicy); this}
-  def count(output:Fields) = count(Fields.ALL, output, CountBy.Include.ALL)
+  def count(value:Fields, output:Fields, nullPolicy: CountBy.Include):AggregateByBuilder = {aggregators += new CountBy(value, output, nullPolicy); this}
+  def count(output:Fields):AggregateByBuilder = count(Fields.ALL, output, CountBy.Include.ALL)
   def countNotNull(valueAndOutAlias:Fields) = count(valueAndOutAlias, valueAndOutAlias, CountBy.Include.NO_NULLS)
 
   /**
