@@ -7,6 +7,7 @@ import jj.tube._
 import cascading.tuple.TupleEntry
 import scala.collection.convert.WrapAsScala.asScalaIterator
 import org.json4s.JsonAST.{JNothing, JObject}
+import scala.util.{Failure, Try}
 
 @RunWith(classOf[JUnitRunner])
 class RichTupleEntryTest extends FunSuite with Matchers {
@@ -57,13 +58,11 @@ class RichTupleEntryTest extends FunSuite with Matchers {
     assert(!JNothing.getClass.equals(result.getClass))
   }
 
-  test("should ignore malformed json and return JNothing symbol"){
+  test("should throw exception for unparsable json"){
     //given
     val tupleEntry:TupleEntry = Map("a" -> """"{"c""")
     //when
-    val result = tupleEntry.json("a")
-    //then
-    assert(JNothing.getClass.equals(result.getClass))
+    Try(tupleEntry.json("a")) shouldBe a [Failure[org.json4s.ParserUtil.ParseException]]
   }
 
   test("should return None option for null value of field"){
