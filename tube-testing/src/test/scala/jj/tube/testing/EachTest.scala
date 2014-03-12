@@ -24,7 +24,7 @@ class EachTest extends FunSuite with BaseFlowTest with Matchers {
         val c = row("c")
         (1 to count).map {
           idx => Map("w"->s"$c$idx")
-        }.toList
+        }
       }.declaring("w")
       .withResult(Fields.RESULTS)
       .go
@@ -51,9 +51,8 @@ class EachTest extends FunSuite with BaseFlowTest with Matchers {
     val inputPerson = Tube("person")
       .flatMap(Fields.ALL){ row =>
         val j = row.json("j")
-        Seq(
-          (j \ "name").extract[String],
-          (j \\ "street").extract[String])
+        tuple((j \ "name").extract[String],
+              (j \\ "street").extract[String])
       }.declaring("name", "street")
       .withResult(Fields.RESULTS)
       .go

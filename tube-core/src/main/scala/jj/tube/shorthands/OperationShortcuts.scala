@@ -7,8 +7,10 @@ trait OperationShortcuts extends FieldsConversions{
   /** finalize builder by applying it to Tube */
   implicit def backToTube(builder: OperationBuilder) = builder.go
 
-  implicit def toTupleEntryList(schemeWithValues: List[Map[String, String]]) =
-    schemeWithValues.map(toTupleEntry)
+  implicit def toTupleEntryList(entry: TupleEntry) = List(entry)
+
+  implicit def toTupleEntryList(schemeWithValues: Iterable[Map[String, Any]]) =
+    schemeWithValues.map(toTupleEntry).toList
 
   implicit def toTupleEntryList(schemeWithValues: Map[String, Any]) =
     List(toTupleEntry(schemeWithValues))
@@ -25,12 +27,7 @@ trait OperationShortcuts extends FieldsConversions{
         te
     }
 
-  implicit def toSimpleTupleEntry(entry: Seq[Any]) = List(tuple(entry))
-
-  implicit def toSimpleTupleEntryList(entries: Iterator[Seq[Any]]) =
-    entries.map(tuple).toList
-
-  def tuple(entry: Seq[Any]):TupleEntry = new TupleEntry(Fields.UNKNOWN, entry.foldLeft(new Tuple){
+  def tuple(entry: Any*):TupleEntry = new TupleEntry(Fields.UNKNOWN, entry.foldLeft(new Tuple){
     (tup, nextVal) => {
       tup.add(nextVal)
       tup

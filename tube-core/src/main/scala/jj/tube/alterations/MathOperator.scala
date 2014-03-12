@@ -48,6 +48,6 @@ trait MathOperator {
   def math(operand: String, outField: String)(func: Double => Double) =
     flatMap(operand) {
       row =>
-        Map(outField -> func(row.double(operand)))
+        Map((outField, func(row.double(operand))))
     }.declaring(outField).go
 }
