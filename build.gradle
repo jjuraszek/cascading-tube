@@ -5,14 +5,14 @@ subprojects {
   apply plugin: 'maven'
 
   //version of cascading
-  ext.cascading = '2.5.2'
+  ext.cascading = '2.5.3'
 
   group = 'org.tube'
-  version = '4.0.10'
+  version = '4.0.12'
 
   dependencies {
     compile(
-        'org.scala-lang:scala-library:2.10.3'
+        'org.scala-lang:scala-library:2.10.4'
     )
   }
 

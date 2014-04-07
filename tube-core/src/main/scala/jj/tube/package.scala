@@ -8,6 +8,7 @@ import jj.tube.shorthands.{FieldsConversions, OperationShortcuts, SortShortcut}
 import scala.collection.convert.WrapAsScala.asScalaIterator
 import scala.collection.immutable.TreeMap
 import scala.util.Try
+import jj.tube.util.TupleEntriesIterator
 
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
@@ -19,9 +20,9 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
 
   type FUNCTION = TupleEntry => List[TupleEntry]
-  type BUFFER = (TupleEntry, Iterator[TupleEntry]) => TraversableOnce[TupleEntry]
+  type BUFFER = (TupleEntry, TupleEntriesIterator) => TraversableOnce[TupleEntry]
   type FILTER = TupleEntry => Boolean
-  type JOIN = (Iterator[TupleEntry], Iterator[TupleEntry]) => TraversableOnce[TupleEntry]
+  type JOIN = (TupleEntriesIterator, TupleEntriesIterator) => TraversableOnce[TupleEntry]
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {
@@ -47,13 +48,13 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
     def json(position:Int) = parse(apply(position))
 
     def add(value: (String,Any)) = {
-      val newEntry = new TupleEntry(value._1, cascading.tuple.Tuple.size(1))
       if(Try(tupleEntry.getFields.getPos(value._1)).filter(_ >= 0).isSuccess){
         tupleEntry.setObject(value._1,value._2)
         tupleEntry
       } else{
-        newEntry.setObject(value._1,value._2)
-        tupleEntry.appendNew(newEntry)
+        tupleEntry.appendNew(
+          new TupleEntry(value._1,
+                         new cascading.tuple.Tuple(value._2.asInstanceOf[Object])))
       }
     }
     def addAll(extraFields: Map[String,Any]) = extraFields.foldLeft(tupleEntry){

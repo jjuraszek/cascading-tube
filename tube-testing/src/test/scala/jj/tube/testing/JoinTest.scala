@@ -76,8 +76,8 @@ class JoinTest extends FunSuite with BaseFlowTest with Matchers {
           val parent = parents.next()
           val underAgeChildren = children.filter(_.int("age")<18)
           if(underAgeChildren.isEmpty)tuple(parent("name"), "NO_CHILD")
-          else underAgeChildren.map{ row => tuple(parent("name"), row.int("age"))}.toIterator
-        }else children.map{ row => tuple("NO_PARENT", row.int("age"))}.toIterator
+          else underAgeChildren.map{ row => tuple(parent("name"), row.int("age"))}
+        }else children.map{ row => tuple("NO_PARENT", row.int("age"))}
       }.declaring("name","age")
 
     //then

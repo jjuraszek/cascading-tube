@@ -16,6 +16,7 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
     //when
     val inputWords = Tube("words")
       .groupBy("w"){ (group, row) =>
+
         val count = row.count(_ => true)
         Map("w" -> group("w"), "c" -> count)
       }.declaring("w","c")
@@ -29,14 +30,15 @@ class GroupingTest extends FunSuite with BaseFlowTest with Matchers {
       }).compute
   }
 
-  test("should group by and sort group with ascending name"){
+  test("should group by and sort group with ascending name and rewriting current (in iterator context) tuple"){
     //given
     val srcWords = Source(("id","w"), List(("1","b"),("1","a"),("1","c")))
 
     //when
     val inputWords = Tube("words")
       .groupBy("id").sorted(ASC("w")){ (group, row) =>
-        List(row.next())
+        row.next()
+        row.saveCurrentTupleEntry()
       }.declaring("w")
       .go
 

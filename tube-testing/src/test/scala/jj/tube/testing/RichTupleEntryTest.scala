@@ -6,7 +6,7 @@ import org.scalatest.{Matchers, FunSuite}
 import jj.tube._
 import cascading.tuple.TupleEntry
 import scala.collection.convert.WrapAsScala.asScalaIterator
-import org.json4s.JsonAST.{JNothing, JObject}
+import org.json4s.JsonAST.JNothing
 import scala.util.{Failure, Try}
 
 @RunWith(classOf[JUnitRunner])
