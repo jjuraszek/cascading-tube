@@ -49,7 +49,7 @@ class EachTest extends FunSuite with BaseFlowTest with Matchers {
         }"""))
     //when
     val inputPerson = Tube("person")
-      .flatMap(Fields.ALL){ row =>
+      .map(Fields.ALL){ row =>
           val j = row.json("j")
           tuple((j \ "name").extract[String],
                 (j \\ "street").extract[String])

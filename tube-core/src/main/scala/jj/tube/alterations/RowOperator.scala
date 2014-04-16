@@ -1,7 +1,7 @@
 package jj.tube.alterations
 
 import cascading.tuple.Fields
-import jj.tube.builders.{FilterBuilder, EachBuilder, AggregateByBuilder}
+import jj.tube.builders.{MapBuilder, FilterBuilder, FlatMapBuilder, AggregateByBuilder}
 import cascading.tuple.Fields._
 import jj.tube._
 import cascading.pipe.assembly.Unique
@@ -20,14 +20,21 @@ trait RowOperator {
    * @param input input to each operation
    * @return builder of each operator
    */
-  def flatMap(input: Fields = ALL) = new EachBuilder(this).withInput(input).withResult(ALL)
+  def flatMap(input: Fields = ALL) = new FlatMapBuilder(this).withInput(input).withResult(ALL)
+
+  /**
+   * transform each row according to surjective function
+   * @param input input to each operation
+   * @return builder of each operator
+   */
+  def map(input: Fields = ALL) = new MapBuilder(this).withInput(input).withResult(ALL)
 
   /**
    * Replace fields with another values
    * @param input fields to replace
    * @return only input fields are altered in that transformation
    */
-  def replace(input: Fields) = new EachBuilder(this).withInput(input).declaring(ARGS).withResult(REPLACE)
+  def replace(input: Fields) = new FlatMapBuilder(this).withInput(input).declaring(ARGS).withResult(REPLACE)
 
   /**
    * Filtering this tube according to defined closure

@@ -20,6 +20,7 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
   implicit def toTube(pipe: Pipe) = new Tube(pipe)
 
   type FUNCTION = TupleEntry => List[TupleEntry]
+  type SURJECTION = TupleEntry => TupleEntry
   type BUFFER = (TupleEntry, TupleEntriesIterator) => TraversableOnce[TupleEntry]
   type FILTER = TupleEntry => Boolean
   type JOIN = (TupleEntriesIterator, TupleEntriesIterator) => TraversableOnce[TupleEntry]
