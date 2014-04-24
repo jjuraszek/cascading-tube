@@ -8,7 +8,7 @@ import jj.tube.shorthands.{FieldsConversions, OperationShortcuts, SortShortcut}
 import scala.collection.convert.WrapAsScala.asScalaIterator
 import scala.collection.immutable.TreeMap
 import scala.util.Try
-import jj.tube.util.TupleEntriesIterator
+import jj.tube.util.{TupleEntryIterable, TupleEntriesIterator}
 
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.
@@ -23,7 +23,7 @@ package object tube extends FieldsConversions with OperationShortcuts with SortS
   type SURJECTION = TupleEntry => TupleEntry
   type BUFFER = (TupleEntry, TupleEntriesIterator) => TraversableOnce[TupleEntry]
   type FILTER = TupleEntry => Boolean
-  type JOIN = (TupleEntriesIterator, TupleEntriesIterator) => TraversableOnce[TupleEntry]
+  type JOIN = (TupleEntriesIterator, Iterable[TupleEntry]) => TraversableOnce[TupleEntry]
 
   /**allow easy operations on TupleEntry without allocation **/
   implicit class RichTupleEntry(val tupleEntry: TupleEntry) extends AnyVal {

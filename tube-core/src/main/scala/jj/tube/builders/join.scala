@@ -84,11 +84,10 @@ with WithCustomOperation[CustomJoinBuilder, JOIN] {
     new BaseOperation[Any] with Buffer[Any] {
       override def operate(flowProcess: FlowProcess[_], bufferCall: BufferCall[Any]) {
         val joiner = bufferCall.getJoinerClosure
-        val leftStream = joiner.getIterator(0).map(new TupleEntry(joiner.getValueFields()(0), _))
-        val rightStream = joiner.getIterator(1).map(new TupleEntry(joiner.getValueFields()(1), _))
         transform(
-          TupleEntriesIterator(leftStream, bufferCall.getOutputCollector),
-          TupleEntriesIterator(rightStream, bufferCall.getOutputCollector)).foreach(WithCustomOperation.writeTupleEntryToOutput(_, bufferCall.getOutputCollector))
+          TupleEntriesIterator(joiner.getIterator(0), joiner.getValueFields()(0), bufferCall.getOutputCollector),
+          builIterable(bufferCall, 1))
+          .foreach(WithCustomOperation.writeTupleEntryToOutput(_, bufferCall.getOutputCollector))
       }
 
       def setOutputScheme(field: Fields) = {
@@ -96,5 +95,13 @@ with WithCustomOperation[CustomJoinBuilder, JOIN] {
         this
       }
     }
+
+  private def builIterable(bufferCall: BufferCall[Any], iteratorIndex: Int) = new Iterable[TupleEntry] {
+    override def iterator =
+      TupleEntriesIterator(
+        bufferCall.getJoinerClosure.getIterator(iteratorIndex),
+        bufferCall.getJoinerClosure.getValueFields()(iteratorIndex),
+        bufferCall.getOutputCollector)
+  }
 }
 

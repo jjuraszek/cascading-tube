@@ -88,4 +88,35 @@ class JoinTest extends FunSuite with BaseFlowTest with Matchers {
       _ should contain only("joe,17", "carol,16","sue,NO_CHILD","NO_PARENT,20")
     }).compute
   }
+
+  test("should for each item look for cheapest price in country"){
+    //given
+    val srcItem = Source(("name","country"), List(("iphone","PL"),("iphone","UK")))
+    val srcShoopPrice = Source(("id_name","price", "place"),
+      List(("iphone","1000","PL"),("iphone","1200","PL"),("iphone","1200","PL"),
+        ("iphone","500","UK"),("iphone","300","UK"),("iphone","800","UK")))
+
+    //when
+    val inputItems = Tube("items")
+    val inputPrice = Tube("prices")
+      .coerce[Int]("price")
+    val cheapestPricePerCountry = Tube("cheapestPricePerCountry",inputItems)
+      .customJoin(inputPrice).on("name","id_name") { (items, prices) =>
+      items.map{ it =>
+        val lowestPrice = prices
+          .filter(_("place") == it("country"))
+          .minBy(_.int("price"))
+          .int("price")
+        tuple(it("name"), it("country"), lowestPrice)
+      }
+    }.declaring("name","country","price")
+
+    //then
+    runFlow
+      .withSource(inputItems, srcItem)
+      .withSource(inputPrice, srcShoopPrice)
+      .withOutput(cheapestPricePerCountry, {
+      _ should contain only("iphone,UK,300", "iphone,PL,1000")
+    }).compute
+  }
 }

@@ -1,9 +1,12 @@
 package jj.tube.util
 
-import cascading.tuple.{TupleEntryCollector, TupleEntry}
+import cascading.tuple.{Fields, Tuple, TupleEntryCollector, TupleEntry}
 import jj.tube.builders.WithCustomOperation
 
 object TupleEntriesIterator {
+  def apply(tupleIterator: Iterator[Tuple], fields:Fields, outputCollector: TupleEntryCollector) =
+    new TupleEntriesIterator(tupleIterator.map(new TupleEntry(fields, _)), outputCollector)
+
   def apply(tupleEntryIterator: Iterator[TupleEntry], outputCollector: TupleEntryCollector) =
     new TupleEntriesIterator(tupleEntryIterator, outputCollector)
 }
