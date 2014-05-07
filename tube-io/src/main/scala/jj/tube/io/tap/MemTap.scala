@@ -5,7 +5,7 @@ import cascading.tuple._
 import cascading.tap.Tap
 import cascading.flow.FlowProcess
 import cascading.scheme.{Scheme, SinkCall, SourceCall, NullScheme}
-import scala.collection.mutable.{Set => MutSet}
+import scala.collection.mutable.ListBuffer
 import java.util.UUID
 import jj.tube._
 
@@ -30,14 +30,15 @@ object MemTap {
       new NullScheme[Nothing, Iterator[Tuple], Nothing, Nothing, Nothing] {
         override def sink(flowProcess: FlowProcess[Nothing], sinkCall: SinkCall[Nothing, Nothing]) {
           val tuple = sinkCall.getOutgoingEntry
-          sinkCall.getOutput.asInstanceOf[MutSet[String]].add(tuple.getTuple.toString(","))
+          val resultList:ListBuffer[String] = sinkCall.getOutput.asInstanceOf[ListBuffer[String]]
+          resultList+=tuple.getTuple.toString(",")
         }
       }
   }
 }
 
 abstract class MemTap(val id:String =UUID.randomUUID().toString) extends Tap[Nothing, Iterator[Tuple], Nothing] {
-  val result = MutSet.empty[String]
+  val result = ListBuffer.empty[String]
   var input: CloseableIterator[Iterator[Tuple]] = null
 
   override def openForRead(flowProcess: FlowProcess[Nothing], o: Iterator[Tuple]) =

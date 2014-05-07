@@ -8,7 +8,7 @@ import jj.tube.shorthands.{FieldsConversions, OperationShortcuts, SortShortcut}
 import scala.collection.convert.WrapAsScala.asScalaIterator
 import scala.collection.immutable.TreeMap
 import scala.util.Try
-import jj.tube.util.{TupleEntryIterable, TupleEntriesIterator}
+import jj.tube.util.TupleEntriesIterator
 
 /**
  * Object containing helper method for operating on input and output of the flow. Incorporating standard conversions between scala structures and cascading.

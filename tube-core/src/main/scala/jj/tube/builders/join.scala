@@ -11,7 +11,7 @@ import cascading.operation.{BufferCall, Buffer, BaseOperation}
 import cascading.flow.FlowProcess
 import scala.collection.convert.WrapAsScala.asScalaIterator
 import scala.language.{reflectiveCalls, existentials}
-import jj.tube.util.TupleEntriesIterator
+import jj.tube.util.{TupleEntryIterable, TupleEntriesIterator}
 
 trait WithJoinStrategy[T] {
   this: T =>
@@ -86,8 +86,11 @@ with WithCustomOperation[CustomJoinBuilder, JOIN] {
         val joiner = bufferCall.getJoinerClosure
         transform(
           TupleEntriesIterator(joiner.getIterator(0), joiner.getValueFields()(0), bufferCall.getOutputCollector),
-          builIterable(bufferCall, 1))
-          .foreach(WithCustomOperation.writeTupleEntryToOutput(_, bufferCall.getOutputCollector))
+          new TupleEntryIterable(bufferCall, 1))
+        .foreach{ z =>
+          println(z)
+          WithCustomOperation.writeTupleEntryToOutput(z, bufferCall.getOutputCollector)
+        }
       }
 
       def setOutputScheme(field: Fields) = {
@@ -95,13 +98,5 @@ with WithCustomOperation[CustomJoinBuilder, JOIN] {
         this
       }
     }
-
-  private def builIterable(bufferCall: BufferCall[Any], iteratorIndex: Int) = new Iterable[TupleEntry] {
-    override def iterator =
-      TupleEntriesIterator(
-        bufferCall.getJoinerClosure.getIterator(iteratorIndex),
-        bufferCall.getJoinerClosure.getValueFields()(iteratorIndex),
-        bufferCall.getOutputCollector)
-  }
 }
 

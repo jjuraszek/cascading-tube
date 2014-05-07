@@ -102,13 +102,14 @@ class JoinTest extends FunSuite with BaseFlowTest with Matchers {
       .coerce[Int]("price")
     val cheapestPricePerCountry = Tube("cheapestPricePerCountry",inputItems)
       .customJoin(inputPrice).on("name","id_name") { (items, prices) =>
-      items.map{ it =>
-        val lowestPrice = prices
-          .filter(_("place") == it("country"))
-          .minBy(_.int("price"))
-          .int("price")
-        tuple(it("name"), it("country"), lowestPrice)
-      }
+        items.map{ it =>
+          println("a")
+          val lowestPrice = prices
+            .filter(_("place") == it("country"))
+            .minBy(_.int("price"))
+            .int("price")
+          tuple(it("name"), it("country"), lowestPrice)
+        }
     }.declaring("name","country","price")
 
     //then

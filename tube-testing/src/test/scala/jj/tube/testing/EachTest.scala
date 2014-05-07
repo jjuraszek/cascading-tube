@@ -52,7 +52,7 @@ class EachTest extends FunSuite with BaseFlowTest with Matchers {
       .map(Fields.ALL){ row =>
           val j = row.json("j")
           tuple((j \ "name").extract[String],
-                (j \\ "street").extract[String])
+                (j \\ "street")(0).extract[String])
         }.declaring("name", "street")
         .withResult(Fields.RESULTS)
       .go
