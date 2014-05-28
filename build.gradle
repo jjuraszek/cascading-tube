@@ -35,6 +35,10 @@ subprojects {
     from javadoc.destinationDir
   }
 
+  task wrapper(type: Wrapper) {
+    gradleVersion = '1.4'
+  }
+
   artifacts {
     archives sourcesJar
     archives javadocJar
