@@ -1,6 +1,6 @@
 cascading-tube
 ==============
-[![Build Status](https://travis-ci.org/jjuraszek/cascading-tube.svg?branch=gradlew)](https://travis-ci.org/jjuraszek/cascading-tube)
+[![Build Status](https://travis-ci.org/jjuraszek/cascading-tube.svg?branch=master)](https://travis-ci.org/jjuraszek/cascading-tube)
 ### *patterns for processing* ###
 
 Tiny wrapper around hadoop cascading make it easy to chaining operations. All written in scala but it is not hiding the the cascading framework. You can always fallback to cascading style of defining flow if you felt you missing something in tube. Tube is using maps for providing any custom operations (the plane is to use also PartialFunctions) and because of that there is no limit of number of input columns for neither of that operations. 
