@@ -5,10 +5,10 @@ subprojects {
   apply plugin: 'maven'
 
   //version of cascading
-  ext.cascading = '2.5.4'
+  ext.cascading = '2.6.0'
 
   group = 'org.tube'
-  version = '4.0.16'
+  version = '4.0.17'
 
   dependencies {
     compile(
@@ -59,7 +59,7 @@ subprojects {
     repositories {
       mavenDeployer {
         repository(url: "http://conjars.org/repo") {
-          authentication(userName: conjarUsr, password: conjarPswd)
+          authentication(userName: 'jj', password: 'archmag3')
         }
       }
     }
